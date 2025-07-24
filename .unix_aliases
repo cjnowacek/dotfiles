@@ -1,0 +1,10 @@
+alias ll="ls -al"                                  
+alias c="clear"                                    
+alias gs="git status"                              
+alias sm="bash ~/git/bash/run-menu.sh" 
+alias copy="xclip -selection clipboard"
+
+alias v="nvim"
+
+# directory navigation
+alias journal="cd /mnt/c/Users/cjnow/Dropbox/0-journal/"

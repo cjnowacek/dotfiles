@@ -102,6 +102,4 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-alias ll="ls -al"
-alias c="clear"
-alias gs="git status"
+source ~/dotfiles/.unix_aliases
