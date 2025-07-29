@@ -8,3 +8,4 @@ alias v="nvim"
 
 # directory navigation
 alias journal="cd /mnt/c/Users/cjnow/Dropbox/0-journal/"
+alias wh="/mnt/c/Users/cjnow/"
