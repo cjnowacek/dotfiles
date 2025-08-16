@@ -1,11 +1,14 @@
-alias ll="ls -al"                                  
+alias ll="ls -alX"                                  
+alias lt="ls -ctalX"
 alias c="clear"                                    
 alias gs="git status"                              
 alias sm="bash ~/git/bash/run-menu.sh" 
 alias copy="xclip -selection clipboard"
 
 alias v="nvim"
+alias vim="nvim"
 
 # directory navigation
 alias journal="cd /mnt/c/Users/cjnow/Dropbox/0-journal/"
 alias wh="/mnt/c/Users/cjnow/"
+alias website="/var/www/html/"
