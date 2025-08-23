@@ -111,3 +111,4 @@ fi
 source ~/dotfiles/unix/.unix_aliases
 
 alias dotfiles='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
+. "$HOME/.cargo/env"

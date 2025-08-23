@@ -1,14 +1,26 @@
-alias ll="ls -alX"                                  
+# terminal
+alias ll="ls -alX"
 alias lt="ls -ctalX"
-alias c="clear"                                    
-alias gs="git status"                              
-alias sm="bash ~/git/bash/run-menu.sh" 
+alias c="clear"
+alias gs="git status"
+alias sm="bash ~/projects/bash/run-menu.sh"
 alias copy="xclip -selection clipboard"
 
+# nvim
 alias v="nvim"
 alias vim="nvim"
 
 # directory navigation
 alias journal="cd /mnt/c/Users/cjnow/Dropbox/0-journal/"
+alias professional="cd /mnt/c/Users/cjnow/Dropbox/1-professional/"
+alias creative="cd /mnt/c/Users/cjnow/Dropbox/2-creative/"
+alias dev="cd /mnt/c/Users/cjnow/Dropbox/3-dev/"
+alias library="cd /mnt/c/Users/cjnow/Dropbox/4-library/"
+alias personal="cd /mnt/c/Users/cjnow/Dropbox/5-personal/"
+# windows home
 alias wh="/mnt/c/Users/cjnow/"
+# website
 alias website="/var/www/html/"
+
+# youtune-dl
+alias youtube-dl='python3 /usr/local/bin/youtube-dl'

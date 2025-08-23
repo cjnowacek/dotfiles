@@ -103,3 +103,5 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 source ~/dotfiles/unix/.unix_aliases
+
+export PATH="$HOME/.cargo/bin:$PATH"
