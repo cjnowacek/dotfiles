@@ -21,6 +21,7 @@ alias personal="cd /mnt/c/Users/cjnow/Dropbox/5-personal/"
 alias wh="/mnt/c/Users/cjnow/"
 # website
 alias website="/var/www/html/"
-
+# resume
+alias resume="/home/cnowacek/projects/resume"
 # youtune-dl
 alias youtube-dl='python3 /usr/local/bin/youtube-dl'
