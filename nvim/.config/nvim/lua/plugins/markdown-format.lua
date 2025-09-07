@@ -10,6 +10,7 @@ return {
       if ft == "markdown" or ft == "mdx" then
         return { timeout_ms = 3000, lsp_fallback = false }
       end
+      return nil  -- explicitly return nil for other file types
     end
   end,
 }
