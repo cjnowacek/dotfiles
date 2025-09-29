@@ -52,3 +52,78 @@
         ("l" "Time Log" entry
          (file+datetree "~/org/timelog.org")
          "* %U %?\n" :clock-in t :clock-keep t)))
+(put 'downcase-region 'disabled nil)
+
+;; Make sure Markdown exporter is available
+(with-eval-after-load 'ox (require 'ox-md))
+
+(defun zk/--clock-md ()
+  "Return today's clocktable as Markdown (body-only)."
+  (let ((org-export-use-babel nil))
+    (with-temp-buffer
+      (org-mode)
+      (insert "* Time Tracking (today)\n"
+              "#+BEGIN: clocktable :block today :link t :compact t :steps t\n"
+              "#+END:\n")
+      (goto-char (point-min))
+      (org-update-all-dblocks)
+      (require 'ox) (require 'ox-md)
+      (org-export-as 'md nil nil t))))
+
+(defun zk/--copy-to-system-clipboard (s)
+  "Copy S to the OS clipboard. Return a symbol describing the method used."
+  (cond
+   ;; Native Windows Emacs
+   ((eq system-type 'windows-nt)
+    (w32-set-clipboard-data s) 'w32)
+
+   ;; macOS GUI/terminal
+   ((executable-find "pbcopy")
+    (with-temp-buffer (insert s)
+      (call-process-region (point-min) (point-max) "pbcopy"))
+    'pbcopy)
+
+   ;; Wayland
+   ((executable-find "wl-copy")
+    (with-temp-buffer (insert s)
+      (call-process-region (point-min) (point-max) "wl-copy"))
+    'wl-copy)
+
+   ;; X11 (xclip/xsel)
+   ((executable-find "xclip")
+    (with-temp-buffer (insert s)
+      (call-process-region (point-min) (point-max) "xclip" nil nil nil "-selection" "clipboard"))
+    'xclip)
+   ((executable-find "xsel")
+    (with-temp-buffer (insert s)
+      (call-process-region (point-min) (point-max) "xsel" nil nil nil "--clipboard" "--input"))
+    'xsel)
+
+   ;; WSL (clip.exe) — try PATH, then absolute fallback
+   ((or (executable-find "clip.exe")
+        (file-executable-p "/mnt/c/Windows/System32/clip.exe"))
+    (let ((clip (or (executable-find "clip.exe")
+                    "/mnt/c/Windows/System32/clip.exe")))
+      (with-temp-buffer (insert s)
+        (call-process-region (point-min) (point-max) clip))
+      'clip.exe))
+
+   ;; Fallback: Emacs kill-ring only
+   (t (kill-new s) 'kill-ring)))
+
+(defun zk/clock-md-to-clipboard ()
+  "Generate today's clocktable (Markdown) and copy to the OS clipboard."
+  (interactive)
+  (let* ((md (zk/--clock-md))
+         (method (zk/--copy-to-system-clipboard md)))
+    (message (pcase method
+               ('w32      "Copied to Windows clipboard.")
+               ('pbcopy   "Copied to macOS clipboard.")
+               ('wl-copy  "Copied via wl-copy.")
+               ('xclip    "Copied via xclip.")
+               ('xsel     "Copied via xsel.")
+               ('clip.exe "Copied via clip.exe (WSL).")
+               ('kill-ring "No system clipboard tool; copied to Emacs kill-ring only.")))))
+
+;; Optional: ensure Emacs uses the OS clipboard when possible
+(setq select-enable-clipboard t)
