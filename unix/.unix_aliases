@@ -6,28 +6,18 @@ alias gs="git status"
 alias sm="bash ~/projects/bash/run-menu.sh"
 alias copy="xclip -selection clipboard"
 
-# Logtask
-alias lt='logtask'
-alias lti='logtask start'
-alias lto='logtask stop'
-alias ltr='logtask report'
-
 # nvim
 alias v="nvim"
+alias n="nvim"
 alias vim="nvim"
 
 # python3
 alias p="python3"
 
 # directory navigation
-alias journal="cd /mnt/c/Users/cjnow/Dropbox/0-journal/"
-alias professional="cd /mnt/c/Users/cjnow/Dropbox/1-professional/"
-alias creative="cd /mnt/c/Users/cjnow/Dropbox/2-creative/"
-alias dev="cd /mnt/c/Users/cjnow/Dropbox/3-dev/"
-alias library="cd /mnt/c/Users/cjnow/Dropbox/4-library/"
-alias personal="cd /mnt/c/Users/cjnow/Dropbox/5-personal/"
+alias zk='/mnt/c/Dropbox/0-Zettlekasten/'
 # windows home
-alias wh="/mnt/c/Users/cjnow/"
+alias wh="/mnt/c"
 # website
 alias website="/var/www/html/"
 # resume
@@ -35,4 +25,5 @@ alias resume="/home/cnowacek/projects/resume"
 # youtune-dl
 alias youtube-dl='python3 /usr/local/bin/youtube-dl'
 
-
+# export PATH
+export PATH="$PATH:/opt/nvim/"

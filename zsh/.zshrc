@@ -105,3 +105,6 @@ source $ZSH/oh-my-zsh.sh
 source ~/dotfiles/unix/.unix_aliases
 
 export PATH="$HOME/.cargo/bin:$PATH"
+
+# Created by `pipx` on 2025-10-29 22:34:23
+export PATH="$PATH:/home/cnowacek/.local/bin"
