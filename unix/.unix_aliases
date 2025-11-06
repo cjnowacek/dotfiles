@@ -3,7 +3,7 @@ alias ll="ls -alX"
 alias lt="ls -ctalX"
 alias c="clear"
 alias gs="git status"
-alias sm="bash ~/projects/bash/run-menu.sh"
+alias sm="bash ~/bash/run-menu.sh"
 alias copy="xclip -selection clipboard"
 
 # nvim
@@ -19,9 +19,9 @@ alias zk='/mnt/c/Dropbox/0-Zettlekasten/'
 # windows home
 alias wh="/mnt/c"
 # website
-alias website="/var/www/html/"
+alias website="~/git/php-website"
 # resume
-alias resume="/home/cnowacek/projects/resume"
+alias resume="~/git/tex-resume"
 # youtune-dl
 alias youtube-dl='python3 /usr/local/bin/youtube-dl'
 

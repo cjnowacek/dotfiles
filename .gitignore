@@ -1,0 +1,45 @@
+# Neovim
+nvim/.config/nvim/lazy-lock.json
+nvim/.config/nvim/.luarc.json
+nvim/.config/nvim/lua/plugins/.luarc.json
+
+# Node modules (for markdown-preview)
+nvim/.config/nvim/lua/plugins/node_modules/
+nvim/.config/nvim/lua/plugins/package-lock.json
+
+# Backup files
+*.backup
+*.backup.*
+*~
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Shell history
+.bash_history
+.zsh_history
+
+# Credentials and secrets
+*.pem
+*.key
+.env
+.env.*
+
+# Local machine-specific configs
+*-local.lua
+*-local.sh
+local/
+
+# Lazy.nvim data
+nvim/.config/nvim/.lazy/
+
+# Mason data
+nvim/.config/nvim/.mason/
