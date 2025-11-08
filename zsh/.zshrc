@@ -102,9 +102,15 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-source ~/dotfiles/unix/.unix_aliases
+source ~/git/dotfiles/unix/.unix_aliases
 
 export PATH="$HOME/.cargo/bin:$PATH"
 
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
 # Created by `pipx` on 2025-10-29 22:34:23
 export PATH="$PATH:/home/cnowacek/.local/bin"
+
+# starting agent for git
+eval "$(ssh-agent -s)" >/dev/null
+ssh-add ~/.ssh/github_key >/dev/null 2>&1

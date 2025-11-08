@@ -265,8 +265,28 @@ setup_python() {
 
   if command -v python3 &>/dev/null; then
     log "Installing pipx"
-    python3 -m pip install --user pipx
-    python3 -m pipx ensurepath
+
+    case "$PKG_MANAGER" in
+    pacman)
+      # On Arch, install pipx via pacman (PEP 668 compliance)
+      sudo pacman -S --needed --noconfirm python-pipx
+      ;;
+    apt)
+      sudo apt-get install -y python3-pip python3-venv
+      python3 -m pip install --user pipx
+      python3 -m pipx ensurepath
+      ;;
+    dnf)
+      sudo dnf install -y python3-pip
+      python3 -m pip install --user pipx
+      python3 -m pipx ensurepath
+      ;;
+    brew)
+      brew install pipx
+      pipx ensurepath
+      ;;
+    esac
+
     log "Python environment configured"
   else
     log "Warning: Python3 not found"
