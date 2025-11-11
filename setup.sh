@@ -24,6 +24,14 @@ log_step() {
 check_os() {
   log_step "Checking operating system"
 
+  # Check for WSL
+  if grep -qi microsoft /proc/version 2>/dev/null; then
+    IS_WSL=true
+    log "Detected WSL (Windows Subsystem for Linux)"
+  else
+    IS_WSL=false
+  fi
+
   if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     OS="linux"
 
@@ -87,43 +95,84 @@ install_dependencies() {
   pacman)
     log "Using pacman"
     sudo pacman -Syu --noconfirm
-    sudo pacman -S --needed --noconfirm \
-      git \
-      curl \
-      wget \
-      base-devel \
-      xclip \
-      ripgrep \
-      fd \
-      fzf \
-      zsh
+
+    if [[ "$IS_WSL" == true ]]; then
+      # WSL doesn't need xclip (uses Windows clipboard)
+      sudo pacman -S --needed --noconfirm \
+        git \
+        curl \
+        wget \
+        base-devel \
+        ripgrep \
+        fd \
+        fzf \
+        zsh
+    else
+      sudo pacman -S --needed --noconfirm \
+        git \
+        curl \
+        wget \
+        base-devel \
+        xclip \
+        ripgrep \
+        fd \
+        fzf \
+        zsh
+    fi
     ;;
   apt)
     log "Using apt"
     sudo apt-get update
-    sudo apt-get install -y \
-      git \
-      curl \
-      wget \
-      build-essential \
-      xclip \
-      ripgrep \
-      fd-find \
-      fzf \
-      zsh
+
+    if [[ "$IS_WSL" == true ]]; then
+      # WSL doesn't need xclip
+      sudo apt-get install -y \
+        git \
+        curl \
+        wget \
+        build-essential \
+        ripgrep \
+        fd-find \
+        fzf \
+        zsh
+    else
+      sudo apt-get install -y \
+        git \
+        curl \
+        wget \
+        build-essential \
+        xclip \
+        ripgrep \
+        fd-find \
+        fzf \
+        zsh
+    fi
     ;;
   dnf)
     log "Using dnf"
-    sudo dnf install -y \
-      git \
-      curl \
-      wget \
-      @development-tools \
-      xclip \
-      ripgrep \
-      fd-find \
-      fzf \
-      zsh
+
+    if [[ "$IS_WSL" == true ]]; then
+      sudo dnf install -y \
+        git \
+        curl \
+        wget \
+        @development-tools \
+        ripgrep \
+        fd-find \
+        fzf \
+        zsh
+    else
+      sudo dnf install -y \
+        git \
+        curl \
+        wget \
+        @development-tools \
+        xclip \
+        ripgrep \
+        fd-find \
+        fzf \
+        zsh
+    fi
     ;;
   brew)
     if ! command -v brew &>/dev/null; then
@@ -272,9 +321,9 @@ setup_python() {
       sudo pacman -S --needed --noconfirm python-pipx
       ;;
     apt)
-      sudo apt-get install -y python3-pip python3-venv
-      python3 -m pip install --user pipx
-      python3 -m pipx ensurepath
+      # On Debian/Ubuntu, install pipx via apt (PEP 668 compliance)
+      sudo apt-get install -y pipx
+      pipx ensurepath
       ;;
     dnf)
       sudo dnf install -y python3-pip
@@ -299,10 +348,25 @@ change_shell() {
 
   if [[ "$SHELL" != "$(which zsh)" ]]; then
     log "Changing default shell to zsh"
-    chsh -s "$(which zsh)"
-    log "Default shell changed (effective on next login)"
+    if chsh -s "$(which zsh)"; then
+      log "Default shell changed (effective on next login)"
+    else
+      log "Warning: Could not change shell automatically"
+      log "Run manually: chsh -s $(which zsh)"
+    fi
   else
     log "Default shell is already zsh"
+  fi
+
+  # Remove Alacritty shell config if it exists (not needed on WSL)
+  if [[ "$IS_WSL" == false ]] && [[ -f "$HOME/.config/alacritty/alacritty.toml" ]]; then
+    log "Removing Alacritty shell config to use login shell"
+    # Remove shell configuration lines if they exist
+    if grep -q "^\[.*shell\]" "$HOME/.config/alacritty/alacritty.toml" 2>/dev/null; then
+      sed -i '/^\[.*shell\]/d' "$HOME/.config/alacritty/alacritty.toml"
+      sed -i '/^program = /d' "$HOME/.config/alacritty/alacritty.toml"
+      sed -i '/^args = /d' "$HOME/.config/alacritty/alacritty.toml"
+    fi
   fi
 }
 
