@@ -8,7 +8,7 @@ export ZSH="$HOME/.oh-my-zsh"
 # load a random theme each time Oh My Zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
-ZSH_THEME="robbyrussell"
+ZSH_THEME="af-magic"
 
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load
@@ -111,6 +111,6 @@ export LC_ALL=en_US.UTF-8
 # Created by `pipx` on 2025-10-29 22:34:23
 export PATH="$PATH:/home/cnowacek/.local/bin"
 
-# starting agent for git
+# start agent for git
 eval "$(ssh-agent -s)" >/dev/null
 ssh-add ~/.ssh/github_key >/dev/null 2>&1
