@@ -308,6 +308,44 @@ install_nodejs() {
   fi
 }
 
+# Install zk (Zettelkasten CLI tool)
+install_zk() {
+  log_step "Installing zk"
+
+  if ! command -v zk &>/dev/null; then
+    log "Installing zk"
+
+    case "$PKG_MANAGER" in
+    pacman)
+      # Check AUR or install from source
+      log "Installing from GitHub releases"
+      curl -L https://github.com/zk-org/zk/releases/latest/download/zk-linux-amd64 -o /tmp/zk
+      chmod +x /tmp/zk
+      sudo mv /tmp/zk /usr/local/bin/zk
+      ;;
+    apt)
+      log "Installing from GitHub releases"
+      curl -L https://github.com/zk-org/zk/releases/latest/download/zk-linux-amd64 -o /tmp/zk
+      chmod +x /tmp/zk
+      sudo mv /tmp/zk /usr/local/bin/zk
+      ;;
+    dnf)
+      log "Installing from GitHub releases"
+      curl -L https://github.com/zk-org/zk/releases/latest/download/zk-linux-amd64 -o /tmp/zk
+      chmod +x /tmp/zk
+      sudo mv /tmp/zk /usr/local/bin/zk
+      ;;
+    brew)
+      brew install zk
+      ;;
+    esac
+
+    log "zk installed"
+  else
+    log "zk already installed"
+  fi
+}
+
 # Setup Python environment
 setup_python() {
   log_step "Setting up Python environment"
@@ -417,6 +455,7 @@ main() {
   install_dependencies
   install_rust
   install_nodejs
+  install_zk
   install_neovim
   install_oh_my_zsh
   create_directories
