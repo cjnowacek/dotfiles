@@ -14,8 +14,18 @@ alias vim="nvim"
 # python3
 alias p="python3"
 
-# directory navigation
-alias zk='/mnt/c/Dropbox/0-Zettlekasten/'
+# change directory depending on file system
+am() {
+  if [ -d /mnt/c/anima-mundi ]; then
+    cd /mnt/c/anima-mundi || return
+  elif [ -d /home/cj/git/anima-mundi ]; then
+    cd /home/cj/git/anima-mundi || return
+  else
+    echo "anima-mundi directory not found." >&2
+    return 1
+  fi
+}
+
 # windows home
 alias wh="/mnt/c"
 # website
