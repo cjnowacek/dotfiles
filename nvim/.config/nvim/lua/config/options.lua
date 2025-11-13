@@ -7,7 +7,7 @@ vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
 
 -- LazyVim auto format
-vim.g.autoformat = true
+vim.g.autoformat = false
 
 -- Snacks animations
 -- Set to `false` to globally disable all snacks animations
@@ -17,7 +17,7 @@ vim.g.snacks_animate = true
 -- Can be one of: telescope, fzf
 -- Leave it to "auto" to automatically use the picker
 -- enabled with `:LazyExtras`
-vim.g.lazyvim_picker = "auto"
+vim.g.lazyvim_picker = "telescope"
 
 -- LazyVim completion engine to use.
 -- Can be one of: nvim-cmp, blink.cmp
