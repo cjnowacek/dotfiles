@@ -16,13 +16,13 @@ alias vim="nvim"
 alias p="python3"
 
 # change directory depending on file system
-am() {
-  if [ -d /mnt/c/anima-mundi ]; then
-    cd /mnt/c/anima-mundi || return
-  elif [ -d /home/cj/git/anima-mundi ]; then
-    cd /home/cj/git/anima-mundi || return
+kb() {
+  if [ -d /mnt/c/kb ]; then
+    cd /mnt/c/kb || return
+  elif [ -d /home/cj/git/kb ]; then
+    cd /home/cj/git/kb || return
   else
-    echo "anima-mundi directory not found." >&2
+    echo "kb directory not found." >&2
     return 1
   fi
 }
