@@ -109,8 +109,7 @@ export PATH="$HOME/.cargo/bin:$PATH"
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 # Created by `pipx` on 2025-10-29 22:34:23
-export PATH="$PATH:/home/cnowacek/.local/bin"
+export PATH="$PATH:$HOME/.local/bin"
 
 # start agent for git
-eval "$(ssh-agent -s)" >/dev/null
-ssh-add ~/.ssh/github_key >/dev/null 2>&1
+export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"

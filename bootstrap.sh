@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -euo pipefail
 
 # Configuration
 DOTFILES_DIR="$HOME/git/dotfiles"
@@ -147,6 +147,12 @@ install_dependencies() {
         fzf \
         zsh
     fi
+
+    # Ubuntu/Debian: fd is packaged as "fd-find" and the binary is usually "fdfind"
+    if command -v fdfind >/dev/null && ! command -v fd >/dev/null; then
+      log "Creating fd symlink (fdfind -> fd)"
+      sudo ln -sf "$(command -v fdfind)" /usr/local/bin/fd
+    fi
     ;;
   dnf)
     log "Using dnf"
@@ -207,7 +213,7 @@ install_rust() {
   if ! command -v rustc &>/dev/null; then
     log "Installing Rust"
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-    source "$HOME/.cargo/env"
+    [[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
     log "Rust installed"
   else
     log "Rust already installed"
@@ -216,35 +222,29 @@ install_rust() {
 
 # Install Neovim
 install_neovim() {
-  log_step "Installing Neovim"
+  log_step "Installing Neovim (latest stable AppImage)"
 
-  if ! command -v nvim &>/dev/null; then
-    log "Installing Neovim"
+  local url="https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.appimage"
 
-    case "$PKG_MANAGER" in
-    pacman)
-      sudo pacman -S --needed --noconfirm neovim
-      ;;
-    apt)
-      curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux64.tar.gz
-      sudo rm -rf /opt/nvim
-      sudo tar -C /opt -xzf nvim-linux64.tar.gz
-      rm nvim-linux64.tar.gz
-      sudo ln -sf /opt/nvim-linux64/bin/nvim /usr/local/bin/nvim
-      ;;
-    dnf)
-      sudo dnf install -y neovim
-      ;;
-    brew)
-      brew install neovim
-      ;;
-    esac
+  log "Downloading Neovim AppImage..."
+  sudo curl -fLLo /usr/local/bin/nvim "$url" || {
+    log_error "Failed to download Neovim AppImage"
+    return 1
+  }
 
-    log "Neovim installed"
-  else
-    log "Neovim already installed"
+  sudo chmod +x /usr/local/bin/nvim
+
+  # Sanity check: ensure we didn't install HTML
+  if ! file /usr/local/bin/nvim | grep -qi 'ELF'; then
+    log_error "Downloaded Neovim is not a valid executable"
+    head -c 200 /usr/local/bin/nvim; echo
+    sudo rm -f /usr/local/bin/nvim
+    return 1
   fi
+
+  log "Neovim installed: $(nvim --version | head -n1)"
 }
+
 
 # Setup shell configurations
 setup_shell() {
@@ -253,13 +253,10 @@ setup_shell() {
   create_symlink "$DOTFILES_DIR/bash/.bashrc" "$HOME/.bashrc"
   create_symlink "$DOTFILES_DIR/zsh/.zshrc" "$HOME/.zshrc"
 
-  mkdir -p "$HOME/dotfiles/unix"
-  create_symlink "$DOTFILES_DIR/unix/.unix_aliases" "$HOME/dotfiles/unix/.unix_aliases"
-
   log "Shell configurations linked"
 }
 
-# Setup Neovim
+# Setup Neovim configuration
 setup_neovim() {
   log_step "Setting up Neovim configuration"
 
@@ -274,9 +271,8 @@ setup_neovim() {
   ln -sf "$DOTFILES_DIR/nvim/.config/nvim" "$HOME/.config/nvim"
   log "Neovim configuration linked"
 
-  log "Installing Neovim plugins"
-  nvim --headless "+Lazy! sync" +qa 2>/dev/null || true
-  log "Neovim plugins installed"
+  # Note: Plugins will auto-install on first Neovim launch
+  log "Neovim plugins will install on first launch (open nvim to trigger)"
 }
 
 # Install Node.js (for markdown-preview)
@@ -309,41 +305,42 @@ install_nodejs() {
 }
 
 # Install zk (Zettelkasten CLI tool)
-install_zk() {
-  log_step "Installing zk"
+install_zk_from_source() {
+  log "Installing zk from source"
 
-  if ! command -v zk &>/dev/null; then
-    log "Installing zk"
-
-    case "$PKG_MANAGER" in
-    pacman)
-      # Check AUR or install from source
-      log "Installing from GitHub releases"
-      curl -L https://github.com/zk-org/zk/releases/latest/download/zk-linux-amd64 -o /tmp/zk
-      chmod +x /tmp/zk
-      sudo mv /tmp/zk /usr/local/bin/zk
-      ;;
-    apt)
-      log "Installing from GitHub releases"
-      curl -L https://github.com/zk-org/zk/releases/latest/download/zk-linux-amd64 -o /tmp/zk
-      chmod +x /tmp/zk
-      sudo mv /tmp/zk /usr/local/bin/zk
-      ;;
-    dnf)
-      log "Installing from GitHub releases"
-      curl -L https://github.com/zk-org/zk/releases/latest/download/zk-linux-amd64 -o /tmp/zk
-      chmod +x /tmp/zk
-      sudo mv /tmp/zk /usr/local/bin/zk
-      ;;
-    brew)
-      brew install zk
-      ;;
-    esac
-
-    log "zk installed"
+  # Ensure deps
+  if command -v apt >/dev/null 2>&1; then
+    sudo apt update
+    sudo apt install -y golang-go make git
   else
-    log "zk already installed"
+    log_error "Unsupported package manager for zk install"
+    return 1
   fi
+
+  # If zk already exists, report version and skip rebuild
+  if command -v zk >/dev/null 2>&1; then
+    log "zk already installed: $(zk --version)"
+    return 0
+  fi
+
+  # Build
+  rm -rf /tmp/zk-build
+  git clone https://github.com/zk-org/zk.git /tmp/zk-build
+  (
+    cd /tmp/zk-build || exit 1
+    make build
+  )
+
+  # Install
+  sudo install -m 0755 /tmp/zk-build/zk /usr/local/bin/zk
+
+  # Verify
+  zk --version || {
+    log_error "zk installation failed"
+    return 1
+  }
+
+  log "zk installed successfully"
 }
 
 # Setup Python environment
@@ -355,11 +352,9 @@ setup_python() {
 
     case "$PKG_MANAGER" in
     pacman)
-      # On Arch, install pipx via pacman (PEP 668 compliance)
       sudo pacman -S --needed --noconfirm python-pipx
       ;;
     apt)
-      # On Debian/Ubuntu, install pipx via apt (PEP 668 compliance)
       sudo apt-get install -y pipx
       pipx ensurepath
       ;;
@@ -380,30 +375,89 @@ setup_python() {
   fi
 }
 
+# Get or pull bash scripts repository
+setup_bash_tools() {
+  log_step "Setting up bash tools repo"
+
+  command -v git >/dev/null || {
+    log_error "git is required but not installed"
+    exit 1
+  }
+
+  mkdir -p "$HOME/git"
+
+  if [ ! -d "$HOME/git/bash/.git" ]; then
+    git clone https://github.com/cjnowacek/bash.git "$HOME/git/bash"
+  else
+    git -C "$HOME/git/bash" pull --rebase
+  fi
+}
+
+# Setup SSH agent as systemd service
+setup_ssh_agent() {
+  log_step "Setting up SSH agent systemd service"
+  
+  # Only set up if SSH key exists
+  if [[ ! -f "$HOME/.ssh/github_key" ]]; then
+    log "Skipping ssh-agent setup (no github_key found)"
+    return
+  fi
+  
+  mkdir -p "$HOME/.config/systemd/user"
+  
+  cat > "$HOME/.config/systemd/user/ssh-agent.service" << 'EOF'
+[Unit]
+Description=SSH key agent
+Documentation=man:ssh-agent(1)
+
+[Service]
+Type=simple
+Environment=SSH_AUTH_SOCK=%t/ssh-agent.socket
+ExecStart=/usr/bin/ssh-agent -D -a $SSH_AUTH_SOCK
+ExecStartPost=/usr/bin/ssh-add %h/.ssh/github_key
+
+[Install]
+WantedBy=default.target
+EOF
+  
+  # Enable and start the service
+  systemctl --user enable ssh-agent.service 2>/dev/null || true
+  systemctl --user start ssh-agent.service 2>/dev/null || true
+  
+  log "SSH agent systemd service configured"
+}
+
 # Change default shell to zsh
 change_shell() {
   log_step "Setting default shell"
 
-  if [[ "$SHELL" != "$(which zsh)" ]]; then
-    log "Changing default shell to zsh"
-    if chsh -s "$(which zsh)"; then
-      log "Default shell changed (effective on next login)"
-    else
-      log "Warning: Could not change shell automatically"
-      log "Run manually: chsh -s $(which zsh)"
+  local zsh_path
+  zsh_path="$(command -v zsh)"
+
+  if [[ "${SHELL:-}" != "$zsh_path" ]]; then
+    log "Changing default shell to zsh ($zsh_path)"
+    if ! chsh -s "$zsh_path"; then
+      log "Warning: could not change shell automatically (you may need: chsh -s $zsh_path)"
     fi
   else
-    log "Default shell is already zsh"
+    log "Default shell already zsh"
   fi
 
   # Remove Alacritty shell config if it exists (not needed on WSL)
-  if [[ "$IS_WSL" == false ]] && [[ -f "$HOME/.config/alacritty/alacritty.toml" ]]; then
+  local file="$HOME/.config/alacritty/alacritty.toml"
+  if [[ "$IS_WSL" == false ]] && [[ -f "$file" ]]; then
     log "Removing Alacritty shell config to use login shell"
-    # Remove shell configuration lines if they exist
-    if grep -q "^\[.*shell\]" "$HOME/.config/alacritty/alacritty.toml" 2>/dev/null; then
-      sed -i '/^\[.*shell\]/d' "$HOME/.config/alacritty/alacritty.toml"
-      sed -i '/^program = /d' "$HOME/.config/alacritty/alacritty.toml"
-      sed -i '/^args = /d' "$HOME/.config/alacritty/alacritty.toml"
+
+    if grep -q "^\[.*shell\]" "$file" 2>/dev/null; then
+      if [[ "$OS" == "linux" ]]; then
+        sed -i '/^\[.*shell\]/d' "$file"
+        sed -i '/^program = /d' "$file"
+        sed -i '/^args = /d' "$file"
+      elif [[ "$OS" == "macos" ]]; then
+        sed -i '' '/^\[.*shell\]/d' "$file"
+        sed -i '' '/^program = /d' "$file"
+        sed -i '' '/^args = /d' "$file"
+      fi
     fi
   fi
 }
@@ -430,8 +484,9 @@ final_steps() {
   echo ""
   log "Setup complete!"
   log "Next steps:"
-  log "  1. Restart your terminal or run: source ~/.zshrc"
-  log "  2. Open Neovim: nvim"
+  log "  1. Log out and log back in (or reboot) for shell change to take effect"
+  log "  2. After logging back in, open Neovim to install plugins: nvim"
+  log "  3. Check SSH agent status: systemctl --user status ssh-agent"
 }
 
 # Main installation flow
@@ -453,15 +508,17 @@ main() {
   # Run setup steps
   check_os
   install_dependencies
+  setup_bash_tools
   install_rust
   install_nodejs
-  install_zk
+  install_zk_from_source
   install_neovim
   install_oh_my_zsh
   create_directories
   setup_shell
   setup_neovim
   setup_python
+  setup_ssh_agent
   change_shell
   final_steps
 }

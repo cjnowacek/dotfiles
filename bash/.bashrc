@@ -107,8 +107,14 @@ if ! shopt -oq posix; then
 fi
 
 # Sourcing unix_aliases
-source ~/git/dotfiles/unix/.unix_aliases
+source $HOME/git/dotfiles/unix/.unix_aliases
 
 alias dotfiles='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
-. "$HOME/.cargo/env"
+[[ -f "$HOME/.cargo/env" ]] && . "$HOME/.cargo/env"
 export PATH="$HOME/bin:$PATH"
+
+# Start ssh agent
+export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
+
+# Created by `pipx` on 2026-01-29 19:11:11
+export PATH="$PATH:/home/seejay/.local/bin"
