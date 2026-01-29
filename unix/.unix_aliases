@@ -5,6 +5,7 @@ alias c="clear"
 alias gs="git status"
 alias sm="bash ~/bash/run-menu.sh"
 alias copy="xclip -selection clipboard"
+alias z="eza -al"
 
 # nvim
 alias v="nvim"
