@@ -7,8 +7,8 @@ Personal configuration files for my development environment.
 ### Clone the Repository
 
 ```bash
-mkdir -p ~/git
-cd ~/git
+mkdir -p $HOME/projects
+cd $HOME/projects
 git clone <your-repo-url> dotfiles
 cd dotfiles
 ```
@@ -52,16 +52,16 @@ If you prefer to install components individually:
 ### Shell Configuration
 
 ```bash
-ln -sf ~/git/dotfiles/bash/.bashrc ~/.bashrc
-ln -sf ~/git/dotfiles/zsh/.zshrc ~/.zshrc
+ln -sf $HOME/projects/dotfiles/bash/.bashrc ~/.bashrc
+ln -sf $HOME/projects/dotfiles/zsh/.zshrc ~/.zshrc
 mkdir -p ~/dotfiles/unix
-ln -sf ~/git/dotfiles/unix/.unix_aliases ~/dotfiles/unix/.unix_aliases
+ln -sf $HOME/projects/dotfiles/unix/.unix_aliases ~/dotfiles/unix/.unix_aliases
 ```
 
 ### Neovim Configuration
 
 ```bash
-ln -sf ~/git/dotfiles/nvim/.config/nvim ~/.config/nvim
+ln -sf $HOME/projects/dotfiles/nvim/.config/nvim ~/.config/nvim
 ```
 
 ### Install Neovim Plugins
@@ -126,7 +126,7 @@ Open Neovim and run:
 Edit `unix/.unix_aliases`:
 
 ```bash
-nvim ~/git/dotfiles/unix/.unix_aliases
+nvim $HOME/projects/dotfiles/unix/.unix_aliases
 ```
 
 ### Customize Neovim
@@ -228,7 +228,7 @@ Install Mason packages manually:
 Make sure the setup script is executable:
 
 ```bash
-chmod +x ~/git/dotfiles/setup.sh
+chmod +x $HOME/projects/dotfiles/setup.sh
 ```
 
 ## Backup
@@ -260,7 +260,7 @@ The setup script automatically backs up existing configuration files to:
 To update your dotfiles:
 
 ```bash
-cd ~/git/dotfiles
+cd $HOME/projects/dotfiles
 git pull
 ./setup.sh  # Re-run if needed
 ```

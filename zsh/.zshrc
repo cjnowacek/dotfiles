@@ -102,7 +102,7 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-source ~/git/dotfiles/unix/.unix_aliases
+source $HOME/projects/dotfiles/unix/.unix_aliases
 
 export PATH="$HOME/.cargo/bin:$PATH"
 

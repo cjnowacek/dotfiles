@@ -3,7 +3,7 @@
 set -euo pipefail
 
 # Configuration
-DOTFILES_DIR="$HOME/git/dotfiles"
+DOTFILES_DIR="$HOME/projects/dotfiles"
 BACKUP_DIR="$HOME/.dotfiles-backup-$(date +%Y%m%d-%H%M%S)"
 
 # Helper functions
@@ -555,8 +555,8 @@ main() {
   if [[ ! -d "$DOTFILES_DIR" ]]; then
     log_error "Dotfiles directory not found at: $DOTFILES_DIR"
     log "Please clone the repository first:"
-    log "  mkdir -p ~/git"
-    log "  git clone <your-repo-url> ~/git/dotfiles"
+    log "  mkdir -p $HOME/projects"
+    log "  git clone <your-repo-url> $HOME/projects/dotfiles"
     exit 1
   fi
 
