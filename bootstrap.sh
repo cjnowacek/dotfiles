@@ -393,6 +393,63 @@ setup_bash_tools() {
   fi
 }
 
+# Setup MCP chat-logger server
+setup_mcp_chat_logger() {
+  log_step "Setting up MCP chat-logger"
+
+  local repo_dir="$HOME/projects/mcp-chat-logger"
+
+  # Clone or pull
+  if [ ! -d "$repo_dir/.git" ]; then
+    git clone git@github.com:cjnowacek/mcp-chat-logger.git "$repo_dir"
+  else
+    git -C "$repo_dir" pull --rebase
+  fi
+
+  # Install and build
+  (cd "$repo_dir" && npm install && npm run build)
+
+  # Determine vault path
+  local vault_path
+  if [[ "$IS_WSL" == true ]]; then
+    local win_user
+    win_user=$(cmd.exe /c "echo %USERNAME%" 2>/dev/null | tr -d '\r') || true
+    if [[ -n "$win_user" && -d "/mnt/c/Users/$win_user/Documents/kb" ]]; then
+      vault_path="/mnt/c/Users/$win_user/Documents/kb"
+    else
+      vault_path="$HOME/git/knowledge-base"
+    fi
+  else
+    vault_path="$HOME/git/knowledge-base"
+  fi
+
+  # Configure Claude MCP server in ~/.claude.json
+  local node_path
+  node_path="$(command -v node)"
+  local server_script="$repo_dir/dist/index.js"
+  local claude_config="$HOME/.claude.json"
+
+  node -e "
+    const fs = require('fs');
+    const configPath = process.argv[1];
+    const nodePath = process.argv[2];
+    const script = process.argv[3];
+    const vault = process.argv[4];
+    let config = {};
+    try { config = JSON.parse(fs.readFileSync(configPath, 'utf-8')); } catch {}
+    if (!config.mcpServers) config.mcpServers = {};
+    config.mcpServers['chat-logger'] = {
+      type: 'stdio',
+      command: nodePath,
+      args: [script],
+      env: { VAULT_PATH: vault }
+    };
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n', 'utf-8');
+  " "$claude_config" "$node_path" "$server_script" "$vault_path"
+
+  log "MCP chat-logger configured (vault: $vault_path)"
+}
+
 # Setup SSH agent as systemd service
 setup_ssh_agent() {
   log_step "Setting up SSH agent systemd service"
@@ -511,6 +568,7 @@ main() {
   setup_bash_tools
   install_rust
   install_nodejs
+  setup_mcp_chat_logger
   install_zk_from_source
   install_neovim
   install_oh_my_zsh
