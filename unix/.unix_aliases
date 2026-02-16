@@ -23,10 +23,8 @@ alias p="python3"
 
 # change directory depending on file system
 kb() {
-  if [ -d /mnt/c/kb ]; then
-    cd /mnt/c/kb || return
-  elif [ -d $HOME/git/kb ]; then
-    cd $HOME/git/kb || return
+  if [ -d "$HOME/projects/knowledge-base" ]; then
+    cd "$HOME/projects/knowledge-base" || return
   else
     echo "kb directory not found." >&2
     return 1
@@ -41,6 +39,23 @@ alias website="$HOME/git/php-website"
 alias resume="$HOME/git/tex-resume"
 # youtune-dl
 [[ -f /usr/local/bin/youtube-dl ]] && alias youtube-dl='python3 /usr/local/bin/youtube-dl'
+
+# claude code init scripts
+_kb_dir() {
+  if [ -d "$HOME/projects/knowledge-base" ]; then
+    echo "$HOME/projects/knowledge-base"
+  fi
+}
+
+cc-work() {
+  local d; d=$(_kb_dir) || return 1
+  claude --append-system-prompt "$(cat "$d/init/work.md")"
+}
+
+cc-ifs() {
+  local d; d=$(_kb_dir) || return 1
+  claude --append-system-prompt "$(cat "$d/init/ifs.md")"
+}
 
 # export PATH
 export PATH="$PATH:/opt/nvim/"
