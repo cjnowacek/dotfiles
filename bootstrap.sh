@@ -417,10 +417,10 @@ setup_mcp_chat_logger() {
     if [[ -n "$win_user" && -d "/mnt/c/Users/$win_user/Documents/kb" ]]; then
       vault_path="/mnt/c/Users/$win_user/Documents/kb"
     else
-      vault_path="$HOME/git/knowledge-base"
+      vault_path="$HOME/projects/knowledge-base"
     fi
   else
-    vault_path="$HOME/git/knowledge-base"
+    vault_path="$HOME/projects/knowledge-base"
   fi
 
   # Configure Claude MCP server in ~/.claude.json
