@@ -530,6 +530,60 @@ create_directories() {
   log "Directories created"
 }
 
+# Setup ai-chats project (optional)
+setup_ai_chats() {
+  log_step "AI Chats project"
+
+  local repo_dir="$HOME/projects/ai-chats"
+
+  read -rp ":: Clone ai-chats repo? [y/N] " answer
+  if [[ ! "$answer" =~ ^[Yy]$ ]]; then
+    log "Skipping ai-chats"
+    return
+  fi
+
+  # Clone or pull
+  if [ ! -d "$repo_dir/.git" ]; then
+    git clone git@github.com:cjnowacek/ai-chats.git "$repo_dir"
+  else
+    git -C "$repo_dir" pull --rebase
+    log "ai-chats already cloned, pulled latest"
+  fi
+
+  # Set up Claude Code memory directory
+  local encoded_path="${repo_dir//\//-}"
+  local memory_dir="$HOME/.claude/projects/$encoded_path/memory"
+  mkdir -p "$memory_dir"
+  log "Claude Code memory dir: $memory_dir"
+
+  # Write .mcp.json into the project if it doesn't exist
+  local mcp_config="$repo_dir/.mcp.json"
+  if [ ! -f "$mcp_config" ]; then
+    local node_path
+    node_path="$(command -v node)"
+    cat > "$mcp_config" <<EOF
+{
+  "mcpServers": {
+    "chat-logger": {
+      "command": "$node_path",
+      "args": ["$HOME/projects/mcp-chat-logger/dist/index.js"],
+      "env": {
+        "VAULT_PATH": "$repo_dir",
+        "OUTPUT_DIR": "$repo_dir",
+        "CLAUDE_DATA_DIR": "$HOME/.claude"
+      }
+    }
+  }
+}
+EOF
+    log "Wrote $mcp_config"
+  else
+    log ".mcp.json already exists, skipping"
+  fi
+
+  log "ai-chats setup complete"
+}
+
 # Final setup steps
 final_steps() {
   log_step "Final steps"
@@ -569,6 +623,7 @@ main() {
   install_rust
   install_nodejs
   setup_mcp_chat_logger
+  setup_ai_chats
   install_zk_from_source
   install_neovim
   install_oh_my_zsh
