@@ -106,6 +106,7 @@ install_dependencies() {
         ripgrep \
         fd \
         fzf \
+        eza \
         zsh
     else
       sudo pacman -S --needed --noconfirm \
@@ -117,6 +118,7 @@ install_dependencies() {
         ripgrep \
         fd \
         fzf \
+        eza \
         zsh
     fi
     ;;
@@ -134,6 +136,7 @@ install_dependencies() {
         ripgrep \
         fd-find \
         fzf \
+        eza \
         zsh
     else
       sudo apt-get install -y \
@@ -145,6 +148,7 @@ install_dependencies() {
         ripgrep \
         fd-find \
         fzf \
+        eza \
         zsh
     fi
 
@@ -166,6 +170,7 @@ install_dependencies() {
         ripgrep \
         fd-find \
         fzf \
+        eza \
         zsh
     else
       sudo dnf install -y \
@@ -177,6 +182,7 @@ install_dependencies() {
         ripgrep \
         fd-find \
         fzf \
+        eza \
         zsh
     fi
     ;;
@@ -186,7 +192,7 @@ install_dependencies() {
       /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     fi
     log "Using Homebrew"
-    brew install git curl wget ripgrep fd fzf zsh
+    brew install git curl wget ripgrep fd fzf eza zsh
     ;;
   esac
 
@@ -546,8 +552,8 @@ setup_ai_chats() {
   if [ ! -d "$repo_dir/.git" ]; then
     git clone git@github.com:cjnowacek/ai-chats.git "$repo_dir"
   else
-    git -C "$repo_dir" pull --rebase
-    log "ai-chats already cloned, pulled latest"
+    git -C "$repo_dir" pull --rebase || log "Warning: could not pull ai-chats (dirty worktree?)"
+    log "ai-chats already cloned"
   fi
 
   # Set up Claude Code memory directory
