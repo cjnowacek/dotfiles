@@ -3,7 +3,7 @@
 set -euo pipefail
 
 # Configuration
-DOTFILES_DIR="$HOME/projects/dotfiles"
+DOTFILES_DIR="$HOME/._"
 BACKUP_DIR="$HOME/.dotfiles-backup-$(date +%Y%m%d-%H%M%S)"
 
 # Helper functions
