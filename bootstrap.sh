@@ -626,6 +626,26 @@ final_steps() {
     log "Backup saved to: $BACKUP_DIR"
   fi
 
+  # Prompt to install Obsidian
+  echo ""
+  read -rp ":: Install Obsidian? (requires sudo) [y/N] " install_obsidian
+  if [[ "$install_obsidian" =~ ^[Yy]$ ]]; then
+    local obsidian_deb="/tmp/obsidian.deb"
+    if [[ ! -f "$obsidian_deb" ]]; then
+      log "Downloading latest Obsidian .deb..."
+      local obsidian_url
+      obsidian_url=$(curl -sL https://api.github.com/repos/obsidianmd/obsidian-releases/releases/latest \
+        | grep -oP '"browser_download_url":\s*"\K[^"]*\.deb' | head -1)
+      curl -L -o "$obsidian_deb" "$obsidian_url"
+    fi
+    log "Installing Obsidian dependencies and package..."
+    sudo apt-get install -y libasound2t64 libnotify4 libnss3 xdg-utils libsecret-1-0
+    sudo dpkg -i "$obsidian_deb"
+    log "Obsidian installed"
+  else
+    log "Skipping Obsidian"
+  fi
+
   echo ""
   log "Setup complete!"
   log "Next steps:"
