@@ -1,11 +1,11 @@
-# Dotfiles (~/.\_)
+# Dotfiles (~/._/dotfiles)
 
-Personal dotfiles repo. Lives at `~/._` with symlinks into `$HOME`.
+Personal dotfiles repo. Lives at `~/._/dotfiles` with symlinks into `$HOME`.
 
 ## Structure
 
 ```
-._/
+dotfiles/
 ├── bash/.bashrc          → ~/.bashrc
 ├── zsh/.zshrc            → ~/.zshrc
 ├── nvim/.config/nvim/    → ~/.config/nvim
@@ -23,8 +23,8 @@ Each subdirectory mirrors the target path from `$HOME`. The bootstrap script (`b
 
 ## Key details
 
-- `DOTFILES_DIR` in `bootstrap.sh` must stay as `$HOME/._`
-- `.bashrc` and `.zshrc` both source `$HOME/._/unix/.unix_aliases`
+- `DOTFILES_DIR` in `bootstrap.sh` must stay as `$HOME/._/dotfiles`
+- `.bashrc` and `.zshrc` both source `$HOME/._/dotfiles/unix/.unix_aliases`
 - Neovim config uses LazyVim (lazy.nvim plugin manager)
 - `bootstrap.sh` also installs system deps, oh-my-zsh, rust, node, neovim, zk, and configures MCP chat-logger
 - Shell aliases live in `unix/.unix_aliases`, not in the rc files directly
