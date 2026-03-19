@@ -286,6 +286,30 @@ setup_neovim() {
   log "Neovim plugins will install on first launch (open nvim to trigger)"
 }
 
+# Setup Obsidian configuration
+setup_obsidian() {
+  log_step "Setting up Obsidian configuration"
+
+  # Link .obsidian config into each vault that exists
+  local obsidian_src="$DOTFILES_DIR/obsidian/.obsidian"
+  local vaults=("$HOME/._/ZK" "$HOME/._/AI_Chats")
+
+  for vault in "${vaults[@]}"; do
+    if [[ -d "$vault" ]]; then
+      local target="$vault/.obsidian"
+      if [[ -L "$target" ]]; then
+        rm "$target"
+      elif [[ -d "$target" ]]; then
+        backup_file "$target"
+      fi
+      ln -sf "$obsidian_src" "$target"
+      log "Obsidian config linked: $target"
+    fi
+  done
+
+  log "Obsidian plugins will need to be installed from community browser on first launch"
+}
+
 # Install Node.js (for markdown-preview)
 install_nodejs() {
   log_step "Installing Node.js"
@@ -414,7 +438,9 @@ setup_mcp_chat_logger() {
   if [ ! -d "$repo_dir/.git" ]; then
     git clone git@github.com:cjnowacek/MCP_Chat_Logger.git "$repo_dir"
   else
+    git -C "$repo_dir" stash
     git -C "$repo_dir" pull --rebase
+    git -C "$repo_dir" stash pop 2>/dev/null || true
   fi
 
   # Install and build
@@ -639,7 +665,7 @@ final_steps() {
       curl -L -o "$obsidian_deb" "$obsidian_url"
     fi
     log "Installing Obsidian dependencies and package..."
-    sudo apt-get install -y libasound2t64 libnotify4 libnss3 xdg-utils libsecret-1-0
+    sudo apt-get install -y libasound2t64 libnotify4 libnss3 xdg-utils libsecret-1-0 libxss1
     sudo dpkg -i "$obsidian_deb"
     log "Obsidian installed"
   else
@@ -694,6 +720,7 @@ main() {
   create_directories
   setup_shell
   setup_neovim
+  setup_obsidian
   setup_python
   setup_ssh_agent
   change_shell

@@ -1,0 +1,8 @@
+{
+  "alwaysUpdateLinks": true,
+  "promptDelete": false,
+  "openBehavior": "daily",
+  "vimMode": true,
+  "readableLineLength": true,
+  "showLineNumber": true
+}
