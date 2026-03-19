@@ -634,6 +634,16 @@ main() {
   echo "Dotfiles Setup Script"
   echo ""
 
+  # On WSL, symlink dotfiles dir from Windows filesystem if needed
+  if [[ ! -d "$DOTFILES_DIR" ]] && grep -qi microsoft /proc/version 2>/dev/null; then
+    WIN_DOTFILES="/mnt/c/Users/$(whoami)/._/dotfiles"
+    if [[ -d "$WIN_DOTFILES" ]]; then
+      log "WSL detected — creating symlink to Windows dotfiles"
+      mkdir -p "$(dirname "$DOTFILES_DIR")"
+      ln -sf "$WIN_DOTFILES" "$DOTFILES_DIR"
+    fi
+  fi
+
   # Verify dotfiles directory exists
   if [[ ! -d "$DOTFILES_DIR" ]]; then
     log_error "Dotfiles directory not found at: $DOTFILES_DIR"
