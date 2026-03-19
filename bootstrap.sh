@@ -3,7 +3,7 @@
 set -euo pipefail
 
 # Configuration
-DOTFILES_DIR="$HOME/._"
+DOTFILES_DIR="$HOME/._/dotfiles"
 BACKUP_DIR="$HOME/.dotfiles-backup-$(date +%Y%m%d-%H%M%S)"
 
 # Helper functions
@@ -403,11 +403,11 @@ setup_bash_tools() {
 setup_mcp_chat_logger() {
   log_step "Setting up MCP chat-logger"
 
-  local repo_dir="$HOME/projects/mcp-chat-logger"
+  local repo_dir="$HOME/._/MCP_Chat_Logger"
 
   # Clone or pull
   if [ ! -d "$repo_dir/.git" ]; then
-    git clone git@github.com:cjnowacek/mcp-chat-logger.git "$repo_dir"
+    git clone git@github.com:cjnowacek/MCP_Chat_Logger.git "$repo_dir"
   else
     git -C "$repo_dir" pull --rebase
   fi
@@ -423,10 +423,10 @@ setup_mcp_chat_logger() {
     if [[ -n "$win_user" && -d "/mnt/c/Users/$win_user/Documents/kb" ]]; then
       vault_path="/mnt/c/Users/$win_user/Documents/kb"
     else
-      vault_path="$HOME/projects/knowledge-base"
+      vault_path="$HOME/._/AI_Chats"
     fi
   else
-    vault_path="$HOME/projects/knowledge-base"
+    vault_path="$HOME/._/AI_Chats"
   fi
 
   # Configure Claude MCP server in ~/.claude.json
@@ -530,30 +530,53 @@ create_directories() {
   log_step "Creating directories"
 
   mkdir -p "$HOME/bin"
-  mkdir -p "$HOME/projects"
+  mkdir -p "$HOME/._"
   mkdir -p "$HOME/.local/bin"
 
   log "Directories created"
 }
 
-# Setup ai-chats project (optional)
-setup_ai_chats() {
-  log_step "AI Chats project"
+# Setup ZK vault (optional)
+setup_zk_vault() {
+  log_step "ZK vault"
 
-  local repo_dir="$HOME/projects/ai-chats"
+  local repo_dir="$HOME/._/ZK"
 
-  read -rp ":: Clone ai-chats repo? [y/N] " answer
+  read -rp ":: Clone ZK repo? [y/N] " answer
   if [[ ! "$answer" =~ ^[Yy]$ ]]; then
-    log "Skipping ai-chats"
+    log "Skipping ZK"
     return
   fi
 
   # Clone or pull
   if [ ! -d "$repo_dir/.git" ]; then
-    git clone git@github.com:cjnowacek/ai-chats.git "$repo_dir"
+    git clone git@github.com:cjnowacek/ZK.git "$repo_dir"
   else
-    git -C "$repo_dir" pull --rebase || log "Warning: could not pull ai-chats (dirty worktree?)"
-    log "ai-chats already cloned"
+    git -C "$repo_dir" pull --rebase || log "Warning: could not pull ZK (dirty worktree?)"
+    log "ZK already cloned"
+  fi
+
+  log "ZK setup complete"
+}
+
+# Setup AI_Chats project (optional)
+setup_ai_chats() {
+  log_step "AI Chats project"
+
+  local repo_dir="$HOME/._/AI_Chats"
+
+  read -rp ":: Clone AI_Chats repo? [y/N] " answer
+  if [[ ! "$answer" =~ ^[Yy]$ ]]; then
+    log "Skipping AI_Chats"
+    return
+  fi
+
+  # Clone or pull
+  if [ ! -d "$repo_dir/.git" ]; then
+    git clone git@github.com:cjnowacek/AI_Chats.git "$repo_dir"
+  else
+    git -C "$repo_dir" pull --rebase || log "Warning: could not pull AI_Chats (dirty worktree?)"
+    log "AI_Chats already cloned"
   fi
 
   # Set up Claude Code memory directory
@@ -572,7 +595,7 @@ setup_ai_chats() {
   "mcpServers": {
     "chat-logger": {
       "command": "$node_path",
-      "args": ["$HOME/projects/mcp-chat-logger/dist/index.js"],
+      "args": ["$HOME/._/MCP_Chat_Logger/dist/index.js"],
       "env": {
         "VAULT_PATH": "$repo_dir",
         "OUTPUT_DIR": "$repo_dir",
@@ -587,7 +610,7 @@ EOF
     log ".mcp.json already exists, skipping"
   fi
 
-  log "ai-chats setup complete"
+  log "AI_Chats setup complete"
 }
 
 # Final setup steps
@@ -615,8 +638,7 @@ main() {
   if [[ ! -d "$DOTFILES_DIR" ]]; then
     log_error "Dotfiles directory not found at: $DOTFILES_DIR"
     log "Please clone the repository first:"
-    log "  mkdir -p $HOME/projects"
-    log "  git clone <your-repo-url> $HOME/projects/dotfiles"
+    log "  git clone <your-repo-url> $HOME/._/dotfiles"
     exit 1
   fi
 
@@ -630,6 +652,7 @@ main() {
   install_nodejs
   setup_mcp_chat_logger
   setup_ai_chats
+  setup_zk_vault
   install_zk_from_source
   install_neovim
   install_oh_my_zsh

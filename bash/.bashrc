@@ -107,7 +107,7 @@ if ! shopt -oq posix; then
 fi
 
 # Sourcing unix_aliases
-source $HOME/._/unix/.unix_aliases
+source $HOME/._/dotfiles/unix/.unix_aliases
 
 alias dotfiles='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 [[ -f "$HOME/.cargo/env" ]] && . "$HOME/.cargo/env"
