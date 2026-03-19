@@ -137,7 +137,12 @@ install_dependencies() {
         fd-find \
         fzf \
         eza \
-        zsh
+        zsh \
+        libasound2t64 \
+        libnotify4 \
+        libnss3 \
+        xdg-utils \
+        libsecret-1-0
     else
       sudo apt-get install -y \
         git \
