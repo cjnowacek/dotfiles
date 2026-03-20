@@ -5,5 +5,7 @@
   "obsidian-vimrc-support",
   "global-search-and-replace",
   "templater-obsidian",
-  "obsidian-excalidraw-plugin"
+  "obsidian-excalidraw-plugin",
+  "table-editor-obsidian",
+  "dataview"
 ]

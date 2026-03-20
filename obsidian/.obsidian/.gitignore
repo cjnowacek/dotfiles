@@ -1,4 +1,6 @@
-plugins/*/
+plugins/*/main.js
+plugins/*/styles.css
+plugins/*/manifest.json
 themes/*/
 workspace.json
 graph.json
