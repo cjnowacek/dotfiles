@@ -121,6 +121,19 @@ install_dependencies() {
         eza \
         zsh
     fi
+
+    # Install yay AUR helper
+    if ! command -v yay &>/dev/null; then
+      log "Installing yay (AUR helper)"
+      local yay_tmp="/tmp/yay-build"
+      rm -rf "$yay_tmp"
+      git clone https://aur.archlinux.org/yay.git "$yay_tmp"
+      (cd "$yay_tmp" && makepkg -si --noconfirm)
+      rm -rf "$yay_tmp"
+      log "yay installed"
+    else
+      log "yay already installed"
+    fi
     ;;
   apt)
     log "Using apt"
@@ -233,25 +246,38 @@ install_rust() {
 
 # Install Neovim
 install_neovim() {
-  log_step "Installing Neovim (latest stable AppImage)"
+  log_step "Installing Neovim"
 
-  local url="https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.appimage"
-
-  log "Downloading Neovim AppImage..."
-  sudo curl -fLLo /usr/local/bin/nvim "$url" || {
-    log_error "Failed to download Neovim AppImage"
-    return 1
-  }
-
-  sudo chmod +x /usr/local/bin/nvim
-
-  # Sanity check: ensure we didn't install HTML
-  if ! file /usr/local/bin/nvim | grep -qi 'ELF'; then
-    log_error "Downloaded Neovim is not a valid executable"
-    head -c 200 /usr/local/bin/nvim; echo
-    sudo rm -f /usr/local/bin/nvim
-    return 1
+  if command -v nvim &>/dev/null; then
+    log "Neovim already installed: $(nvim --version | head -n1)"
+    return 0
   fi
+
+  case "$PKG_MANAGER" in
+  pacman)
+    sudo pacman -S --needed --noconfirm neovim
+    ;;
+  brew)
+    brew install neovim
+    ;;
+  *)
+    # AppImage fallback for Debian/Fedora/WSL
+    local url="https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.appimage"
+    log "Downloading Neovim AppImage..."
+    sudo curl -fLLo /usr/local/bin/nvim "$url" || {
+      log_error "Failed to download Neovim AppImage"
+      return 1
+    }
+    sudo chmod +x /usr/local/bin/nvim
+
+    if ! file /usr/local/bin/nvim | grep -qi 'ELF'; then
+      log_error "Downloaded Neovim is not a valid executable"
+      head -c 200 /usr/local/bin/nvim; echo
+      sudo rm -f /usr/local/bin/nvim
+      return 1
+    fi
+    ;;
+  esac
 
   log "Neovim installed: $(nvim --version | head -n1)"
 }
@@ -340,7 +366,7 @@ install_nodejs() {
 }
 
 # Install zk (Zettelkasten CLI tool)
-install_zk_from_source() {
+install_zk() {
   log_step "Installing zk"
 
   # If zk already exists, report version and skip
@@ -733,7 +759,7 @@ main() {
   setup_mcp_chat_logger
   setup_ai_chats
   setup_zk_vault
-  install_zk_from_source
+  install_zk
   install_neovim
   install_oh_my_zsh
   create_directories
