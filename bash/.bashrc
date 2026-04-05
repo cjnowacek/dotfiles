@@ -115,8 +115,3 @@ export PATH="$HOME/bin:$PATH"
 # Start ssh agent
 export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
 
-# Created by `pipx` on 2026-01-29 19:11:11
-export PATH="$PATH:/home/seejay/.local/bin"
-
-# Created by `pipx` on 2026-03-19 13:50:42
-export PATH="$PATH:/home/cnowacek/.local/bin"
