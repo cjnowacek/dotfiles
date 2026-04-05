@@ -3,7 +3,7 @@
 set -euo pipefail
 
 # Configuration
-DOTFILES_DIR="$HOME/._/dotfiles"
+DOTFILES_DIR="$HOME/.dotfiles"
 BACKUP_DIR="$HOME/.dotfiles-backup-$(date +%Y%m%d-%H%M%S)"
 
 # Helper functions
@@ -292,7 +292,7 @@ setup_obsidian() {
 
   # Link .obsidian config into each vault that exists
   local obsidian_src="$DOTFILES_DIR/obsidian/.obsidian"
-  local vaults=("$HOME/._/ZK" "$HOME/._/AI_Chats")
+  local vaults=("$HOME/projects/ZK" "$HOME/projects/AI_Chats")
 
   for vault in "${vaults[@]}"; do
     if [[ -d "$vault" ]]; then
@@ -341,35 +341,40 @@ install_nodejs() {
 
 # Install zk (Zettelkasten CLI tool)
 install_zk_from_source() {
-  log "Installing zk from source"
+  log_step "Installing zk"
 
-  # Ensure deps
-  if command -v apt >/dev/null 2>&1; then
-    sudo apt update
-    sudo apt install -y golang-go make git
-  else
-    log_error "Unsupported package manager for zk install"
-    return 1
-  fi
-
-  # If zk already exists, report version and skip rebuild
+  # If zk already exists, report version and skip
   if command -v zk >/dev/null 2>&1; then
     log "zk already installed: $(zk --version)"
     return 0
   fi
 
-  # Build
-  rm -rf /tmp/zk-build
-  git clone https://github.com/zk-org/zk.git /tmp/zk-build
-  (
-    cd /tmp/zk-build || exit 1
-    make build
-  )
+  case "$PKG_MANAGER" in
+  pacman)
+    sudo pacman -S --needed --noconfirm zk
+    ;;
+  apt)
+    sudo apt update
+    sudo apt install -y golang-go make git
+    rm -rf /tmp/zk-build
+    git clone https://github.com/zk-org/zk.git /tmp/zk-build
+    (cd /tmp/zk-build && make build)
+    sudo install -m 0755 /tmp/zk-build/zk /usr/local/bin/zk
+    rm -rf /tmp/zk-build
+    ;;
+  dnf)
+    sudo dnf install -y golang make git
+    rm -rf /tmp/zk-build
+    git clone https://github.com/zk-org/zk.git /tmp/zk-build
+    (cd /tmp/zk-build && make build)
+    sudo install -m 0755 /tmp/zk-build/zk /usr/local/bin/zk
+    rm -rf /tmp/zk-build
+    ;;
+  brew)
+    brew install zk
+    ;;
+  esac
 
-  # Install
-  sudo install -m 0755 /tmp/zk-build/zk /usr/local/bin/zk
-
-  # Verify
   zk --version || {
     log_error "zk installation failed"
     return 1
@@ -432,7 +437,7 @@ setup_bash_tools() {
 setup_mcp_chat_logger() {
   log_step "Setting up MCP chat-logger"
 
-  local repo_dir="$HOME/._/MCP_Chat_Logger"
+  local repo_dir="$HOME/projects/MCP_Chat_Logger"
 
   # Clone or pull
   if [ ! -d "$repo_dir/.git" ]; then
@@ -454,10 +459,10 @@ setup_mcp_chat_logger() {
     if [[ -n "$win_user" && -d "/mnt/c/Users/$win_user/Documents/kb" ]]; then
       vault_path="/mnt/c/Users/$win_user/Documents/kb"
     else
-      vault_path="$HOME/._/AI_Chats"
+      vault_path="$HOME/projects/AI_Chats"
     fi
   else
-    vault_path="$HOME/._/AI_Chats"
+    vault_path="$HOME/projects/AI_Chats"
   fi
 
   # Configure Claude MCP server in ~/.claude.json
@@ -561,7 +566,7 @@ create_directories() {
   log_step "Creating directories"
 
   mkdir -p "$HOME/bin"
-  mkdir -p "$HOME/._"
+  mkdir -p "$HOME/projects"
   mkdir -p "$HOME/.local/bin"
 
   log "Directories created"
@@ -571,7 +576,7 @@ create_directories() {
 setup_zk_vault() {
   log_step "ZK vault"
 
-  local repo_dir="$HOME/._/ZK"
+  local repo_dir="$HOME/projects/ZK"
 
   read -rp ":: Clone ZK repo? [y/N] " answer
   if [[ ! "$answer" =~ ^[Yy]$ ]]; then
@@ -594,7 +599,7 @@ setup_zk_vault() {
 setup_ai_chats() {
   log_step "AI Chats project"
 
-  local repo_dir="$HOME/._/AI_Chats"
+  local repo_dir="$HOME/projects/AI_Chats"
 
   read -rp ":: Clone AI_Chats repo? [y/N] " answer
   if [[ ! "$answer" =~ ^[Yy]$ ]]; then
@@ -626,7 +631,7 @@ setup_ai_chats() {
   "mcpServers": {
     "chat-logger": {
       "command": "$node_path",
-      "args": ["$HOME/._/MCP_Chat_Logger/dist/index.js"],
+      "args": ["$HOME/projects/MCP_Chat_Logger/dist/index.js"],
       "env": {
         "VAULT_PATH": "$repo_dir",
         "OUTPUT_DIR": "$repo_dir",
@@ -656,17 +661,31 @@ final_steps() {
   echo ""
   read -rp ":: Install Obsidian? (requires sudo) [y/N] " install_obsidian
   if [[ "$install_obsidian" =~ ^[Yy]$ ]]; then
-    local obsidian_deb="/tmp/obsidian.deb"
-    if [[ ! -f "$obsidian_deb" ]]; then
-      log "Downloading latest Obsidian .deb..."
-      local obsidian_url
-      obsidian_url=$(curl -sL https://api.github.com/repos/obsidianmd/obsidian-releases/releases/latest \
-        | grep -oP '"browser_download_url":\s*"\K[^"]*\.deb' | head -1)
-      curl -L -o "$obsidian_deb" "$obsidian_url"
-    fi
-    log "Installing Obsidian dependencies and package..."
-    sudo apt-get install -y libasound2t64 libnotify4 libnss3 xdg-utils libsecret-1-0 libxss1
-    sudo dpkg -i "$obsidian_deb"
+    case "$PKG_MANAGER" in
+    pacman)
+      log "Obsidian is available via AUR (e.g. 'yay -S obsidian')"
+      log "Install an AUR helper first if you don't have one"
+      ;;
+    apt)
+      local obsidian_deb="/tmp/obsidian.deb"
+      if [[ ! -f "$obsidian_deb" ]]; then
+        log "Downloading latest Obsidian .deb..."
+        local obsidian_url
+        obsidian_url=$(curl -sL https://api.github.com/repos/obsidianmd/obsidian-releases/releases/latest \
+          | grep -oP '"browser_download_url":\s*"\K[^"]*\.deb' | head -1)
+        curl -L -o "$obsidian_deb" "$obsidian_url"
+      fi
+      log "Installing Obsidian dependencies and package..."
+      sudo apt-get install -y libasound2t64 libnotify4 libnss3 xdg-utils libsecret-1-0 libxss1
+      sudo dpkg -i "$obsidian_deb"
+      ;;
+    brew)
+      brew install --cask obsidian
+      ;;
+    *)
+      log "No automated Obsidian install for this package manager — install manually"
+      ;;
+    esac
     log "Obsidian installed"
   else
     log "Skipping Obsidian"
@@ -687,7 +706,7 @@ main() {
 
   # On WSL, symlink dotfiles dir from Windows filesystem if needed
   if [[ ! -d "$DOTFILES_DIR" ]] && grep -qi microsoft /proc/version 2>/dev/null; then
-    WIN_DOTFILES="/mnt/c/Users/$(whoami)/._/dotfiles"
+    WIN_DOTFILES="/mnt/c/Users/$(whoami)/.dotfiles"
     if [[ -d "$WIN_DOTFILES" ]]; then
       log "WSL detected — creating symlink to Windows dotfiles"
       mkdir -p "$(dirname "$DOTFILES_DIR")"
@@ -699,7 +718,7 @@ main() {
   if [[ ! -d "$DOTFILES_DIR" ]]; then
     log_error "Dotfiles directory not found at: $DOTFILES_DIR"
     log "Please clone the repository first:"
-    log "  git clone <your-repo-url> $HOME/._/dotfiles"
+    log "  git clone <your-repo-url> $HOME/.dotfiles"
     exit 1
   fi
 
