@@ -312,6 +312,22 @@ setup_neovim() {
   log "Neovim plugins will install on first launch (open nvim to trigger)"
 }
 
+# Setup Hyprland configuration
+setup_hyprland() {
+  log_step "Setting up Hyprland configuration"
+
+  mkdir -p "$HOME/.config"
+
+  if [[ -L "$HOME/.config/hypr" ]]; then
+    rm "$HOME/.config/hypr"
+  elif [[ -d "$HOME/.config/hypr" ]]; then
+    backup_file "$HOME/.config/hypr"
+  fi
+
+  ln -sf "$DOTFILES_DIR/hypr/.config/hypr" "$HOME/.config/hypr"
+  log "Hyprland configuration linked"
+}
+
 # Setup Obsidian configuration
 setup_obsidian() {
   log_step "Setting up Obsidian configuration"
@@ -765,6 +781,7 @@ main() {
   create_directories
   setup_shell
   setup_neovim
+  setup_hyprland
   setup_obsidian
   setup_python
   setup_ssh_agent

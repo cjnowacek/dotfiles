@@ -9,6 +9,7 @@ dotfiles/
 ├── bash/.bashrc          → ~/.bashrc
 ├── zsh/.zshrc            → ~/.zshrc
 ├── nvim/.config/nvim/    → ~/.config/nvim
+├── hypr/.config/hypr/    → ~/.config/hypr
 ├── unix/.unix_aliases    (sourced by both .bashrc and .zshrc)
 ├── bootstrap.sh          (full system setup script)
 └── emacs/                (unused)
