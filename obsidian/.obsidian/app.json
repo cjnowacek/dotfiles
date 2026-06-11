@@ -4,5 +4,8 @@
   "openBehavior": "daily",
   "vimMode": true,
   "readableLineLength": true,
-  "showLineNumber": true
+  "showLineNumber": true,
+  "attachmentFolderPath": "/",
+  "newFileLocation": "folder",
+  "newFileFolderPath": "_Inbox"
 }

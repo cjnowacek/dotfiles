@@ -117,3 +117,8 @@ export LD_LIBRARY_PATH=/opt/cuda/lib64:$LD_LIBRARY_PATH
 [ -f /opt/miniforge/etc/profile.d/conda.sh ] && source /opt/miniforge/etc/profile.d/conda.sh
 
 
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/home/seejay/.lmstudio/bin"
+# End of LM Studio CLI section
+

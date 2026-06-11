@@ -115,3 +115,8 @@ export PATH="$HOME/bin:$PATH"
 # Start ssh agent
 export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
 
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/home/seejay/.lmstudio/bin"
+# End of LM Studio CLI section
+
