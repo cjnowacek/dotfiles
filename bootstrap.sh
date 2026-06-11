@@ -340,7 +340,7 @@ setup_obsidian() {
 
   # Link .obsidian config into each vault that exists
   local obsidian_src="$DOTFILES_DIR/obsidian/.obsidian"
-  local vaults=("$HOME/projects/ZK" "$HOME/projects/AI_Chats")
+  local vaults=("$HOME/projects/ZK" "$HOME/projects/AI-Chats")
 
   for vault in "${vaults[@]}"; do
     if [[ -d "$vault" ]]; then
@@ -490,15 +490,15 @@ can_access_repo() {
 setup_mcp_chat_logger() {
   log_step "Setting up MCP chat-logger"
 
-  local repo_dir="$HOME/projects/MCP_Chat_Logger"
+  local repo_dir="$HOME/projects/MCP-Chat-Logger"
 
   # Clone or pull
   if [ ! -d "$repo_dir/.git" ]; then
-    if ! can_access_repo git@github.com:cjnowacek/MCP_Chat_Logger.git; then
-      log "Warning: no access to MCP_Chat_Logger (private repo) — skipping"
+    if ! can_access_repo git@github.com:cjnowacek/MCP-Chat-Logger.git; then
+      log "Warning: no access to MCP-Chat-Logger (private repo) — skipping"
       return
     fi
-    git clone git@github.com:cjnowacek/MCP_Chat_Logger.git "$repo_dir"
+    git clone git@github.com:cjnowacek/MCP-Chat-Logger.git "$repo_dir"
   else
     git -C "$repo_dir" stash
     git -C "$repo_dir" pull --rebase
@@ -516,10 +516,10 @@ setup_mcp_chat_logger() {
     if [[ -n "$win_user" && -d "/mnt/c/Users/$win_user/Documents/kb" ]]; then
       vault_path="/mnt/c/Users/$win_user/Documents/kb"
     else
-      vault_path="$HOME/projects/AI_Chats"
+      vault_path="$HOME/projects/AI-Chats"
     fi
   else
-    vault_path="$HOME/projects/AI_Chats"
+    vault_path="$HOME/projects/AI-Chats"
   fi
 
   # Configure Claude MCP server in ~/.claude.json
@@ -656,28 +656,28 @@ setup_zk_vault() {
   log "ZK setup complete"
 }
 
-# Setup AI_Chats project (optional)
+# Setup AI-Chats project (optional)
 setup_ai_chats() {
   log_step "AI Chats project"
 
-  local repo_dir="$HOME/projects/AI_Chats"
+  local repo_dir="$HOME/projects/AI-Chats"
 
-  read -rp ":: Clone AI_Chats repo? [y/N] " answer
+  read -rp ":: Clone AI-Chats repo? [y/N] " answer
   if [[ ! "$answer" =~ ^[Yy]$ ]]; then
-    log "Skipping AI_Chats"
+    log "Skipping AI-Chats"
     return
   fi
 
   # Clone or pull
   if [ ! -d "$repo_dir/.git" ]; then
-    if ! can_access_repo git@github.com:cjnowacek/AI_Chats.git; then
-      log "Warning: no access to AI_Chats (private repo) — skipping"
+    if ! can_access_repo git@github.com:cjnowacek/AI-Chats.git; then
+      log "Warning: no access to AI-Chats (private repo) — skipping"
       return
     fi
-    git clone git@github.com:cjnowacek/AI_Chats.git "$repo_dir"
+    git clone git@github.com:cjnowacek/AI-Chats.git "$repo_dir"
   else
-    git -C "$repo_dir" pull --rebase || log "Warning: could not pull AI_Chats (dirty worktree?)"
-    log "AI_Chats already cloned"
+    git -C "$repo_dir" pull --rebase || log "Warning: could not pull AI-Chats (dirty worktree?)"
+    log "AI-Chats already cloned"
   fi
 
   # Set up Claude Code memory directory
@@ -696,7 +696,7 @@ setup_ai_chats() {
   "mcpServers": {
     "chat-logger": {
       "command": "$node_path",
-      "args": ["$HOME/projects/MCP_Chat_Logger/dist/index.js"],
+      "args": ["$HOME/projects/MCP-Chat-Logger/dist/index.js"],
       "env": {
         "VAULT_PATH": "$repo_dir",
         "OUTPUT_DIR": "$repo_dir",
@@ -711,7 +711,7 @@ EOF
     log ".mcp.json already exists, skipping"
   fi
 
-  log "AI_Chats setup complete"
+  log "AI-Chats setup complete"
 }
 
 # Final setup steps
