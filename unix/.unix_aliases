@@ -38,7 +38,7 @@ alias wh="/mnt/c"
 # website
 alias website="$HOME/git/php-website"
 # resume
-alias resume="$HOME/git/tex-resume"
+alias resume="$HOME/projects/Resume-with-Tex"
 # youtune-dl
 [[ -f /usr/local/bin/youtube-dl ]] && alias youtube-dl='python3 /usr/local/bin/youtube-dl'
 
