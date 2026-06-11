@@ -472,12 +472,12 @@ setup_bash_tools() {
     exit 1
   }
 
-  mkdir -p "$HOME/git"
+  mkdir -p "$HOME/projects"
 
-  if [ ! -d "$HOME/git/bash/.git" ]; then
-    git clone https://github.com/cjnowacek/bash.git "$HOME/git/bash"
+  if [ ! -d "$HOME/projects/Bash/.git" ]; then
+    git clone https://github.com/cjnowacek/Bash.git "$HOME/projects/Bash"
   else
-    git -C "$HOME/git/bash" pull --rebase
+    git -C "$HOME/projects/Bash" pull --rebase
   fi
 }
 

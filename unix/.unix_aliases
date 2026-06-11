@@ -3,7 +3,7 @@ alias ll="ls -alX"
 alias lt="ls -ctalX"
 alias c="clear"
 alias gs="git status"
-alias sm="bash $HOME/git/bash/run-menu.sh"
+alias sm="bash $HOME/projects/Bash/run-menu.sh"
 alias z="eza -al"
 
 # Clipboard - Wayland, X11, or WSL
