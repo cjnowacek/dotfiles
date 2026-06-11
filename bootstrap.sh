@@ -107,6 +107,7 @@ install_dependencies() {
         fd \
         fzf \
         eza \
+        pandoc \
         zsh
     else
       sudo pacman -S --needed --noconfirm \
@@ -119,6 +120,7 @@ install_dependencies() {
         fd \
         fzf \
         eza \
+        pandoc \
         zsh
     fi
 
@@ -150,6 +152,7 @@ install_dependencies() {
         fd-find \
         fzf \
         eza \
+        pandoc \
         zsh \
         libasound2t64 \
         libnotify4 \
@@ -167,6 +170,7 @@ install_dependencies() {
         fd-find \
         fzf \
         eza \
+        pandoc \
         zsh
     fi
 
@@ -189,6 +193,7 @@ install_dependencies() {
         fd-find \
         fzf \
         eza \
+        pandoc \
         zsh
     else
       sudo dnf install -y \
@@ -201,6 +206,7 @@ install_dependencies() {
         fd-find \
         fzf \
         eza \
+        pandoc \
         zsh
     fi
     ;;
@@ -210,7 +216,7 @@ install_dependencies() {
       /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     fi
     log "Using Homebrew"
-    brew install git curl wget ripgrep fd fzf eza zsh
+    brew install git curl wget ripgrep fd fzf eza pandoc zsh
     ;;
   esac
 
