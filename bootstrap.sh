@@ -481,6 +481,11 @@ setup_bash_tools() {
   fi
 }
 
+# Check we can reach a repo (e.g. private repos need SSH access)
+can_access_repo() {
+  git ls-remote "$1" &>/dev/null
+}
+
 # Setup MCP chat-logger server
 setup_mcp_chat_logger() {
   log_step "Setting up MCP chat-logger"
@@ -489,6 +494,10 @@ setup_mcp_chat_logger() {
 
   # Clone or pull
   if [ ! -d "$repo_dir/.git" ]; then
+    if ! can_access_repo git@github.com:cjnowacek/MCP_Chat_Logger.git; then
+      log "Warning: no access to MCP_Chat_Logger (private repo) — skipping"
+      return
+    fi
     git clone git@github.com:cjnowacek/MCP_Chat_Logger.git "$repo_dir"
   else
     git -C "$repo_dir" stash
@@ -634,6 +643,10 @@ setup_zk_vault() {
 
   # Clone or pull
   if [ ! -d "$repo_dir/.git" ]; then
+    if ! can_access_repo git@github.com:cjnowacek/ZK.git; then
+      log "Warning: no access to ZK (private repo) — skipping"
+      return
+    fi
     git clone git@github.com:cjnowacek/ZK.git "$repo_dir"
   else
     git -C "$repo_dir" pull --rebase || log "Warning: could not pull ZK (dirty worktree?)"
@@ -657,6 +670,10 @@ setup_ai_chats() {
 
   # Clone or pull
   if [ ! -d "$repo_dir/.git" ]; then
+    if ! can_access_repo git@github.com:cjnowacek/AI_Chats.git; then
+      log "Warning: no access to AI_Chats (private repo) — skipping"
+      return
+    fi
     git clone git@github.com:cjnowacek/AI_Chats.git "$repo_dir"
   else
     git -C "$repo_dir" pull --rebase || log "Warning: could not pull AI_Chats (dirty worktree?)"
