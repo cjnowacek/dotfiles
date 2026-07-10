@@ -39,11 +39,12 @@ clone (e.g. `C:\dev\dotfiles`) for the Windows-native pieces. Same repo/history 
 `git pull` on each side.
 
 - `bootstrap.ps1` — Windows setup; run from the Windows clone (`pwsh -File bootstrap.ps1`).
-  Junctions `nvim/.config/nvim` → `%LOCALAPPDATA%\nvim` and symlinks the PowerShell
-  profile → `$PROFILE.CurrentUserAllHosts`.
+  Junctions `nvim/.config/nvim` → `%LOCALAPPDATA%\nvim`, and writes a `$PROFILE` stub that
+  dot-sources `powershell/Microsoft.PowerShell_profile.ps1`.
 - `powershell/Microsoft.PowerShell_profile.ps1` — Windows equivalent of `unix/.unix_aliases`;
   keep the two in rough sync when adding aliases.
+- **No admin / Developer Mode required.** Directory junctions and the profile stub both work
+  for a plain user, entirely under the Windows user home (`%LOCALAPPDATA%`, `%USERPROFILE%`),
+  and edits flow through on `git pull`. Good for locked-down work machines.
 - Only **nvim** and the **aliases** are shared. `hypr/`, `bootstrap.sh`, and the oh-my-zsh
   setup are Linux-only, no Windows counterpart.
-- Windows needs Developer Mode for the profile *symlink*; otherwise bootstrap.ps1 copies it
-  (no live `git pull` updates).

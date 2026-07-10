@@ -7,13 +7,15 @@
         powershell -File .\bootstrap.ps1  # Windows PowerShell 5.1
 
     Links the cross-platform pieces into their Windows locations:
-      - Neovim config  -> %LOCALAPPDATA%\nvim   (directory junction, no admin)
-      - PowerShell profile -> $PROFILE.CurrentUserAllHosts
+      - Neovim config  -> %LOCALAPPDATA%\nvim   (directory junction)
+      - PowerShell profile: a stub at $PROFILE that dot-sources the repo profile
 
-    Idempotent: re-running relinks and backs up any real files it replaces.
-    For live-updating file links, enable Windows Developer Mode
-    (Settings > Privacy & security > For developers). Otherwise the profile
-    is copied instead of symlinked and won't auto-update on `git pull`.
+    NO ADMIN OR DEVELOPER MODE REQUIRED. Directory junctions and the profile
+    stub both work for a plain user; edits still flow through on `git pull`.
+    Everything it touches lives under your Windows user home (%LOCALAPPDATA%,
+    %USERPROFILE%). Idempotent: re-running is safe and backs up real files it
+    replaces. (On a truly locked box where even junctions are blocked, the
+    nvim config is copied instead — works, but won't live-update.)
 #>
 
 $ErrorActionPreference = 'Stop'
@@ -34,22 +36,31 @@ function Link-Dir([string]$Target, [string]$Link) {
             Move-Item $Link $backup
         }
     }
-    New-Item -ItemType Junction -Path $Link -Target $Target | Out-Null
-    Write-Info "Linked (junction): $Link -> $Target"
+    try {
+        New-Item -ItemType Junction -Path $Link -Target $Target -ErrorAction Stop | Out-Null
+        Write-Info "Linked (junction): $Link -> $Target"
+    } catch {
+        # Junctions need no admin, but on a truly locked box fall back to a copy.
+        Write-Info "Junction failed — copied instead (won't live-update): $Link"
+        Copy-Item $Target $Link -Recurse -Force
+    }
 }
 
-# Link a file via symlink; fall back to a copy if symlinks aren't permitted.
-function Link-File([string]$Target, [string]$Link) {
-    $dir = Split-Path -Parent $Link
+# Point $PROFILE at the repo profile WITHOUT symlinks: write a tiny stub that
+# dot-sources the versioned file. Needs no admin / Developer Mode, and edits
+# still flow through on `git pull`. Works on locked-down machines.
+function Set-ProfileStub([string]$Target, [string]$ProfilePath) {
+    $dir = Split-Path -Parent $ProfilePath
     if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
-    if (Test-Path $Link) { Remove-Item $Link -Force }
-    try {
-        New-Item -ItemType SymbolicLink -Path $Link -Target $Target -ErrorAction Stop | Out-Null
-        Write-Info "Linked (symlink): $Link -> $Target"
-    } catch {
-        Copy-Item $Target $Link -Force
-        Write-Info "Symlink not permitted (enable Developer Mode) — copied instead: $Link"
-    }
+    if (Test-Path $ProfilePath) { Remove-Item $ProfilePath -Force }
+    $stub = @"
+# Managed by dotfiles bootstrap.ps1 — do not edit; edit the repo profile instead.
+# Sources the versioned PowerShell profile so `git pull` updates flow through.
+`$__dotfilesProfile = '$Target'
+if (Test-Path `$__dotfilesProfile) { . `$__dotfilesProfile }
+"@
+    Set-Content -Path $ProfilePath -Value $stub -Encoding UTF8
+    Write-Info "Wrote profile stub -> sources $Target"
 }
 
 Write-Host "Dotfiles — Windows setup"
@@ -65,11 +76,11 @@ if (Test-Path $nvimTarget) {
     Write-Info "Warning: nvim config not found at $nvimTarget"
 }
 
-# 2. PowerShell profile
+# 2. PowerShell profile (stub that sources the repo file — no admin needed)
 Write-Step "PowerShell profile"
 $profileTarget = Join-Path $RepoDir 'powershell\Microsoft.PowerShell_profile.ps1'
 if (Test-Path $profileTarget) {
-    Link-File $profileTarget $PROFILE.CurrentUserAllHosts
+    Set-ProfileStub $profileTarget $PROFILE.CurrentUserAllHosts
 } else {
     Write-Info "Warning: profile not found at $profileTarget"
 }
