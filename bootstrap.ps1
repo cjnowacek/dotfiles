@@ -77,10 +77,17 @@ if (Test-Path $nvimTarget) {
 }
 
 # 2. PowerShell profile (stub that sources the repo file — no admin needed)
+# Written to BOTH editions: PowerShell 7 and Windows PowerShell 5.1 use
+# different profile paths, so cover both regardless of which one runs bootstrap.
 Write-Step "PowerShell profile"
 $profileTarget = Join-Path $RepoDir 'powershell\Microsoft.PowerShell_profile.ps1'
 if (Test-Path $profileTarget) {
-    Set-ProfileStub $profileTarget $PROFILE.CurrentUserAllHosts
+    $docs = [Environment]::GetFolderPath('MyDocuments')   # respects OneDrive redirection
+    $profilePaths = @(
+        (Join-Path $docs 'PowerShell\profile.ps1'),         # PowerShell 7+
+        (Join-Path $docs 'WindowsPowerShell\profile.ps1')   # Windows PowerShell 5.1
+    )
+    foreach ($pp in $profilePaths) { Set-ProfileStub $profileTarget $pp }
 } else {
     Write-Info "Warning: profile not found at $profileTarget"
 }
