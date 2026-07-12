@@ -2,6 +2,11 @@
 
 Personal dotfiles repo. Lives at `~/.dotfiles` with symlinks into `$HOME`.
 
+## Clone Location
+
+- **Windows:** `C:\dev\dotfiles` (CJ's repos live in `C:\dev`)
+- **Linux:** `~/.dotfiles` — the exception to the usual `~/dev` convention, because `bootstrap.sh`'s `DOTFILES_DIR` requires `$HOME/.dotfiles`
+
 ## Structure
 
 ```
