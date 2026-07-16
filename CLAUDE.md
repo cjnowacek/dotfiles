@@ -37,6 +37,10 @@ Each subdirectory mirrors the target path from `$HOME`. The bootstrap script (`b
 - Neovim config uses LazyVim (lazy.nvim plugin manager)
 - `bootstrap.sh` also installs system deps, oh-my-zsh, rust, node, neovim, zk, and configures MCP chat-logger
 - Shell aliases live in `unix/.unix_aliases`, not in the rc files directly
+- `setup_obsidian()` links `obsidian/.obsidian` into each vault. Defaults to `~/dev/zettelpara`
+  and `~/dev/ai-chats`; override with `VAULTS="/path/a /path/b" ./bootstrap.sh`. Vaults that
+  don't exist are skipped with a log line, so a stale path fails silently — keep this list and
+  the `-Vaults` default in `bootstrap.ps1` in sync when a vault moves.
 
 ## Windows (cross-platform) half
 

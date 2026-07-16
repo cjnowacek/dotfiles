@@ -338,9 +338,16 @@ setup_hyprland() {
 setup_obsidian() {
   log_step "Setting up Obsidian configuration"
 
-  # Link .obsidian config into each vault that exists
+  # Link .obsidian config into each vault that exists. Windows counterpart is
+  # the -Vaults param in bootstrap.ps1; keep the two lists in sync.
+  # Override: VAULTS="/path/one /path/two" ./bootstrap.sh
   local obsidian_src="$DOTFILES_DIR/obsidian/.obsidian"
-  local vaults=("$HOME/projects/ZK" "$HOME/projects/AI-Chats")
+  local vaults
+  if [[ -n "${VAULTS:-}" ]]; then
+    read -ra vaults <<< "$VAULTS"
+  else
+    vaults=("$HOME/dev/zettelpara" "$HOME/dev/ai-chats")
+  fi
 
   for vault in "${vaults[@]}"; do
     if [[ -d "$vault" ]]; then
@@ -352,6 +359,8 @@ setup_obsidian() {
       fi
       ln -sf "$obsidian_src" "$target"
       log "Obsidian config linked: $target"
+    else
+      log "Skipped (no such vault): $vault"
     fi
   done
 
