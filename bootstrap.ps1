@@ -1,6 +1,6 @@
 #Requires -Version 5.1
 <#
-    bootstrap.ps1 — Windows half of the dotfiles.
+    bootstrap.ps1 - Windows half of the dotfiles.
 
     Run from a WINDOWS clone of this repo (e.g. C:\dev\dotfiles):
         pwsh -File .\bootstrap.ps1        # PowerShell 7
@@ -9,14 +9,24 @@
     Links the cross-platform pieces into their Windows locations:
       - Neovim config  -> %LOCALAPPDATA%\nvim   (directory junction)
       - PowerShell profile: a stub at $PROFILE that dot-sources the repo profile
+      - Obsidian config -> <vault>\.obsidian    (directory junction, per vault)
+
+    Windows counterpart of setup_obsidian() in bootstrap.sh. Pass -Vaults to
+    override the default vault list.
 
     NO ADMIN OR DEVELOPER MODE REQUIRED. Directory junctions and the profile
     stub both work for a plain user; edits still flow through on `git pull`.
     Everything it touches lives under your Windows user home (%LOCALAPPDATA%,
     %USERPROFILE%). Idempotent: re-running is safe and backs up real files it
     replaces. (On a truly locked box where even junctions are blocked, the
-    nvim config is copied instead — works, but won't live-update.)
+    nvim config is copied instead - works, but won't live-update.)
 #>
+
+param(
+    # Vaults to link the Obsidian config into. Windows equivalent of the
+    # vaults list in bootstrap.sh's setup_obsidian(). Missing ones are skipped.
+    [string[]]$Vaults = @('C:\dev\zettlepara', 'C:\dev\ai-chats')
+)
 
 $ErrorActionPreference = 'Stop'
 $RepoDir = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -29,7 +39,10 @@ function Link-Dir([string]$Target, [string]$Link) {
     if (Test-Path $Link) {
         $item = Get-Item $Link -Force
         if ($item.LinkType) {
-            Remove-Item $Link -Force
+            # Delete the reparse point only. Remove-Item -Force would see the
+            # target's children through the link, demand -Recurse, and (if given
+            # it) delete the target's contents.
+            [System.IO.Directory]::Delete($Link, $false)
         } else {
             $backup = "$Link.bak-$(Get-Date -Format yyyyMMdd-HHmmss)"
             Write-Info "Backing up existing $Link -> $backup"
@@ -41,7 +54,7 @@ function Link-Dir([string]$Target, [string]$Link) {
         Write-Info "Linked (junction): $Link -> $Target"
     } catch {
         # Junctions need no admin, but on a truly locked box fall back to a copy.
-        Write-Info "Junction failed — copied instead (won't live-update): $Link"
+        Write-Info "Junction failed - copied instead (won't live-update): $Link"
         Copy-Item $Target $Link -Recurse -Force
     }
 }
@@ -54,7 +67,7 @@ function Set-ProfileStub([string]$Target, [string]$ProfilePath) {
     if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
     if (Test-Path $ProfilePath) { Remove-Item $ProfilePath -Force }
     $stub = @"
-# Managed by dotfiles bootstrap.ps1 — do not edit; edit the repo profile instead.
+# Managed by dotfiles bootstrap.ps1 - do not edit; edit the repo profile instead.
 # Sources the versioned PowerShell profile so `git pull` updates flow through.
 `$__dotfilesProfile = '$Target'
 if (Test-Path `$__dotfilesProfile) { . `$__dotfilesProfile }
@@ -63,7 +76,7 @@ if (Test-Path `$__dotfilesProfile) { . `$__dotfilesProfile }
     Write-Info "Wrote profile stub -> sources $Target"
 }
 
-Write-Host "Dotfiles — Windows setup"
+Write-Host "Dotfiles - Windows setup"
 Write-Info "Repo: $RepoDir"
 
 # 1. Neovim configuration
@@ -76,7 +89,7 @@ if (Test-Path $nvimTarget) {
     Write-Info "Warning: nvim config not found at $nvimTarget"
 }
 
-# 2. PowerShell profile (stub that sources the repo file — no admin needed)
+# 2. PowerShell profile (stub that sources the repo file - no admin needed)
 # Written to BOTH editions: PowerShell 7 and Windows PowerShell 5.1 use
 # different profile paths, so cover both regardless of which one runs bootstrap.
 Write-Step "PowerShell profile"
@@ -92,13 +105,33 @@ if (Test-Path $profileTarget) {
     Write-Info "Warning: profile not found at $profileTarget"
 }
 
-# 3. Optional: nudge for native tools that the profile/aliases assume
+# 3. Obsidian configuration (junctioned into each vault that exists)
+Write-Step "Obsidian configuration"
+$obsidianTarget = Join-Path $RepoDir 'obsidian\.obsidian'
+if (Test-Path $obsidianTarget) {
+    $linked = 0
+    foreach ($vault in $Vaults) {
+        if (Test-Path $vault) {
+            Link-Dir $obsidianTarget (Join-Path $vault '.obsidian')
+            $linked++
+        } else {
+            Write-Info "skipped (no such vault): $vault"
+        }
+    }
+    if ($linked -gt 0) {
+        Write-Info "Plugins install from the community browser on first launch (see community-plugins.json)"
+    }
+} else {
+    Write-Info "Warning: obsidian config not found at $obsidianTarget"
+}
+
+# 4. Optional: nudge for native tools that the profile/aliases assume
 Write-Step "Recommended native tools (optional)"
 foreach ($t in 'nvim','eza','git') {
     if (Get-Command $t -ErrorAction SilentlyContinue) {
         Write-Info "found: $t"
     } else {
-        Write-Info "missing: $t  (winget install ...)  — some aliases need it"
+        Write-Info "missing: $t  (winget install ...)  - some aliases need it"
     }
 }
 

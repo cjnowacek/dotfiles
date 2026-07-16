@@ -15,9 +15,10 @@ dotfiles/
 ├── zsh/.zshrc            → ~/.zshrc
 ├── nvim/.config/nvim/    → ~/.config/nvim
 ├── hypr/.config/hypr/    → ~/.config/hypr
+├── obsidian/.obsidian/   → <vault>/.obsidian   (each vault; both OSes)
 ├── unix/.unix_aliases    (sourced by both .bashrc and .zshrc)
 ├── bootstrap.sh          (full system setup script)
-├── bootstrap.ps1         (Windows setup: nvim + PowerShell profile)
+├── bootstrap.ps1         (Windows setup: nvim + PowerShell profile + Obsidian)
 ├── powershell/Microsoft.PowerShell_profile.ps1   (Windows alias equivalent)
 └── emacs/                (unused)
 ```
@@ -44,12 +45,21 @@ clone (e.g. `C:\dev\dotfiles`) for the Windows-native pieces. Same repo/history;
 `git pull` on each side.
 
 - `bootstrap.ps1`: Windows setup; run from the Windows clone (`pwsh -File bootstrap.ps1`).
-  Junctions `nvim/.config/nvim` → `%LOCALAPPDATA%\nvim`, and writes a `$PROFILE` stub that
-  dot-sources `powershell/Microsoft.PowerShell_profile.ps1`.
+  Junctions `nvim/.config/nvim` → `%LOCALAPPDATA%\nvim`, writes a `$PROFILE` stub that
+  dot-sources `powershell/Microsoft.PowerShell_profile.ps1`, and junctions
+  `obsidian/.obsidian` into each vault (Windows counterpart of `setup_obsidian()` in
+  `bootstrap.sh`). Vault list defaults to `C:\dev\zettlepara` and `C:\dev\ai-chats`;
+  override with `-Vaults`. Missing vaults are skipped.
+- **Keep `bootstrap.ps1` ASCII-only.** It has no BOM, so Windows PowerShell 5.1 decodes it as
+  ANSI; a non-ASCII character such as an em dash decodes to a curly quote, which the parser
+  treats as a string delimiter, and the whole script fails to parse.
 - `powershell/Microsoft.PowerShell_profile.ps1`: Windows equivalent of `unix/.unix_aliases`;
   keep the two in rough sync when adding aliases.
 - **No admin / Developer Mode required.** Directory junctions and the profile stub both work
   for a plain user, entirely under the Windows user home (`%LOCALAPPDATA%`, `%USERPROFILE%`),
   and edits flow through on `git pull`. Good for locked-down work machines.
-- Only **nvim** and the **aliases** are shared. `hypr/`, `bootstrap.sh`, and the oh-my-zsh
-  setup are Linux-only, no Windows counterpart.
+- **nvim**, the **aliases**, and the **Obsidian config** are shared. `hypr/`, `bootstrap.sh`,
+  and the oh-my-zsh setup are Linux-only, no Windows counterpart.
+- Obsidian plugin code (`plugins/*/main.js`, `manifest.json`, `themes/`) is gitignored by
+  `obsidian/.obsidian/.gitignore`; only settings and `community-plugins.json` are tracked, so
+  plugins reinstall from the community browser on first launch. Same on both OSes.
