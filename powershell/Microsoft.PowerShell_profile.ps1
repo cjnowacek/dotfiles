@@ -34,7 +34,7 @@ function copy { $input | Set-Clipboard }
 # --- Run WSL bash tools from Windows ---------------------------------------
 # sm -> your run-menu.sh inside WSL. Single quotes stop PowerShell from
 # expanding ~, so WSL's bash does the tilde expansion instead.
-function sm { wsl bash '~/projects/Bash/run-menu.sh' @args }
+function sm { wsl bash '~/dev/bash/run-menu.sh' @args }
 # Generic passthrough:  wsltool rg "pattern" .   /   wsltool fd -e cs
 function wsltool { wsl @args }
 

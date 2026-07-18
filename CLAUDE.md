@@ -35,7 +35,7 @@ Each subdirectory mirrors the target path from `$HOME`. The bootstrap script (`b
 - `DOTFILES_DIR` in `bootstrap.sh` must stay as `$HOME/.dotfiles`
 - `.bashrc` and `.zshrc` both source `$HOME/.dotfiles/unix/.unix_aliases`
 - Neovim config uses LazyVim (lazy.nvim plugin manager)
-- `bootstrap.sh` also installs system deps, oh-my-zsh, rust, node, neovim, zk, and configures MCP chat-logger
+- `bootstrap.sh` also installs system deps, oh-my-zsh, rust, node, neovim, zk, and configures MCP chat-logger; the repos it clones (bash, mcp-chat-logger, zettelpara, ai-chats) go into `~/dev/`, matching the Windows `C:\dev` convention
 - Shell aliases live in `unix/.unix_aliases`, not in the rc files directly
 - `setup_obsidian()` links `obsidian/.obsidian` into each vault. Defaults to `~/dev/zettelpara`
   and `~/dev/ai-chats`; override with `VAULTS="/path/a /path/b" ./bootstrap.sh`. Vaults that

@@ -481,12 +481,12 @@ setup_bash_tools() {
     exit 1
   }
 
-  mkdir -p "$HOME/projects"
+  mkdir -p "$HOME/dev"
 
-  if [ ! -d "$HOME/projects/Bash/.git" ]; then
-    git clone https://github.com/cjnowacek/bash.git "$HOME/projects/Bash"
+  if [ ! -d "$HOME/dev/bash/.git" ]; then
+    git clone https://github.com/cjnowacek/bash.git "$HOME/dev/bash"
   else
-    git -C "$HOME/projects/Bash" pull --rebase
+    git -C "$HOME/dev/bash" pull --rebase
   fi
 }
 
@@ -499,7 +499,7 @@ can_access_repo() {
 setup_mcp_chat_logger() {
   log_step "Setting up MCP chat-logger"
 
-  local repo_dir="$HOME/projects/MCP-Chat-Logger"
+  local repo_dir="$HOME/dev/mcp-chat-logger"
 
   # Clone or pull
   if [ ! -d "$repo_dir/.git" ]; then
@@ -525,10 +525,10 @@ setup_mcp_chat_logger() {
     if [[ -n "$win_user" && -d "/mnt/c/Users/$win_user/Documents/kb" ]]; then
       vault_path="/mnt/c/Users/$win_user/Documents/kb"
     else
-      vault_path="$HOME/projects/AI-Chats"
+      vault_path="$HOME/dev/ai-chats"
     fi
   else
-    vault_path="$HOME/projects/AI-Chats"
+    vault_path="$HOME/dev/ai-chats"
   fi
 
   # Configure Claude MCP server in ~/.claude.json
@@ -632,7 +632,7 @@ create_directories() {
   log_step "Creating directories"
 
   mkdir -p "$HOME/bin"
-  mkdir -p "$HOME/projects"
+  mkdir -p "$HOME/dev"
   mkdir -p "$HOME/.local/bin"
 
   log "Directories created"
@@ -642,7 +642,7 @@ create_directories() {
 setup_zk_vault() {
   log_step "ZK vault"
 
-  local repo_dir="$HOME/projects/ZK"
+  local repo_dir="$HOME/dev/zettelpara"
 
   read -rp ":: Clone ZK repo? [y/N] " answer
   if [[ ! "$answer" =~ ^[Yy]$ ]]; then
@@ -669,7 +669,7 @@ setup_zk_vault() {
 setup_ai_chats() {
   log_step "AI Chats project"
 
-  local repo_dir="$HOME/projects/AI-Chats"
+  local repo_dir="$HOME/dev/ai-chats"
 
   read -rp ":: Clone AI-Chats repo? [y/N] " answer
   if [[ ! "$answer" =~ ^[Yy]$ ]]; then
@@ -705,7 +705,7 @@ setup_ai_chats() {
   "mcpServers": {
     "chat-logger": {
       "command": "$node_path",
-      "args": ["$HOME/projects/MCP-Chat-Logger/dist/index.js"],
+      "args": ["$HOME/dev/mcp-chat-logger/dist/index.js"],
       "env": {
         "VAULT_PATH": "$repo_dir",
         "OUTPUT_DIR": "$repo_dir",
