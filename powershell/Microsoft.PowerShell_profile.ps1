@@ -40,7 +40,7 @@ function wsltool { wsl @args }
 
 # --- Windows project shortcuts (edit to taste) -----------------------------
 $Dev = 'C:\dev'
-function titans { Set-Location (Join-Path $Dev 'Titans-and-Traitors') }
+function titans { Set-Location (Join-Path $Dev 'titans-and-traitors') }
 
 # --- PATH: user-local bin (parallels ~/.local/bin) -------------------------
 $LocalBin = Join-Path $HOME '.local\bin'

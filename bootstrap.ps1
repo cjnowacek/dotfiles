@@ -10,6 +10,8 @@
       - Neovim config  -> %LOCALAPPDATA%\nvim   (directory junction)
       - PowerShell profile: a stub at $PROFILE that dot-sources the repo profile
       - Obsidian config -> <vault>\.obsidian    (directory junction, per vault)
+      - Repos: clones/updates CJ's repos into C:\dev over SSH
+        (mirrors bootstrap.sh's repo setup on the Linux side)
 
     Windows counterpart of setup_obsidian() in bootstrap.sh. Pass -Vaults to
     override the default vault list.
@@ -125,7 +127,49 @@ if (Test-Path $obsidianTarget) {
     Write-Info "Warning: obsidian config not found at $obsidianTarget"
 }
 
-# 4. Optional: nudge for native tools that the profile/aliases assume
+# 4. Repos (mirrors bootstrap.sh's repo setup; Windows repos live in C:\dev)
+$DevDir = 'C:\dev'
+
+# Check we can reach a repo (e.g. private repos need SSH access).
+function Test-RepoAccess([string]$Url) {
+    $old = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'   # PS5.1 throws on redirected native stderr under 'Stop'
+    git ls-remote $Url 2>&1 | Out-Null
+    $ok = ($LASTEXITCODE -eq 0)
+    $ErrorActionPreference = $old
+    return $ok
+}
+
+# Clone if missing, pull if already there.
+function Get-Repo([string]$Url, [string]$Dest) {
+    if (Test-Path (Join-Path $Dest '.git')) {
+        Write-Info "Updating $Dest"
+        git -C $Dest pull --rebase
+    } elseif (Test-RepoAccess $Url) {
+        git clone $Url $Dest
+    } else {
+        Write-Info "Warning: no access to $Url (private repo / no SSH key?) - skipping"
+    }
+}
+
+Write-Step "Repos ($DevDir)"
+if (Get-Command git -ErrorAction SilentlyContinue) {
+    if (-not (Test-Path $DevDir)) { New-Item -ItemType Directory -Path $DevDir -Force | Out-Null }
+    Get-Repo 'git@github.com:cjnowacek/bash.git' (Join-Path $DevDir 'bash')
+    Get-Repo 'git@github.com:cjnowacek/mcp-chat-logger.git' (Join-Path $DevDir 'mcp-chat-logger')
+    foreach ($name in 'zettelpara', 'ai-chats') {
+        $answer = Read-Host ":: Clone $name? [y/N]"
+        if ($answer -match '^[Yy]$') {
+            Get-Repo "git@github.com:cjnowacek/$name.git" (Join-Path $DevDir $name)
+        } else {
+            Write-Info "Skipping $name"
+        }
+    }
+} else {
+    Write-Info "git not found - skipping repo setup"
+}
+
+# 5. Optional: nudge for native tools that the profile/aliases assume
 Write-Step "Recommended native tools (optional)"
 foreach ($t in 'nvim','eza','git') {
     if (Get-Command $t -ErrorAction SilentlyContinue) {

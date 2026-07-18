@@ -36,9 +36,9 @@ kb() {
 # windows home
 alias wh="/mnt/c"
 # website
-alias website="$HOME/projects/PHP-Website"
+alias website="$HOME/projects/php-website"
 # resume
-alias resume="$HOME/projects/Resume-with-Tex"
+alias resume="$HOME/projects/resume-with-tex"
 # youtune-dl
 [[ -f /usr/local/bin/youtube-dl ]] && alias youtube-dl='python3 /usr/local/bin/youtube-dl'
 

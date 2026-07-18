@@ -50,10 +50,12 @@ clone (e.g. `C:\dev\dotfiles`) for the Windows-native pieces. Same repo/history;
 
 - `bootstrap.ps1`: Windows setup; run from the Windows clone (`pwsh -File bootstrap.ps1`).
   Junctions `nvim/.config/nvim` → `%LOCALAPPDATA%\nvim`, writes a `$PROFILE` stub that
-  dot-sources `powershell/Microsoft.PowerShell_profile.ps1`, and junctions
+  dot-sources `powershell/Microsoft.PowerShell_profile.ps1`, junctions
   `obsidian/.obsidian` into each vault (Windows counterpart of `setup_obsidian()` in
-  `bootstrap.sh`). Vault list defaults to `C:\dev\zettlepara` and `C:\dev\ai-chats`;
-  override with `-Vaults`. Missing vaults are skipped.
+  `bootstrap.sh`; vault list defaults to `C:\dev\zettlepara` and `C:\dev\ai-chats`,
+  override with `-Vaults`, missing vaults are skipped), and clones/updates repos into
+  `C:\dev` over SSH (bash, mcp-chat-logger always; zettelpara, ai-chats behind y/N prompts),
+  mirroring `bootstrap.sh`'s repo setup.
 - **Keep `bootstrap.ps1` ASCII-only.** It has no BOM, so Windows PowerShell 5.1 decodes it as
   ANSI; a non-ASCII character such as an em dash decodes to a curly quote, which the parser
   treats as a string delimiter, and the whole script fails to parse.

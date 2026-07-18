@@ -484,7 +484,7 @@ setup_bash_tools() {
   mkdir -p "$HOME/projects"
 
   if [ ! -d "$HOME/projects/Bash/.git" ]; then
-    git clone https://github.com/cjnowacek/Bash.git "$HOME/projects/Bash"
+    git clone https://github.com/cjnowacek/bash.git "$HOME/projects/Bash"
   else
     git -C "$HOME/projects/Bash" pull --rebase
   fi
@@ -503,11 +503,11 @@ setup_mcp_chat_logger() {
 
   # Clone or pull
   if [ ! -d "$repo_dir/.git" ]; then
-    if ! can_access_repo git@github.com:cjnowacek/MCP-Chat-Logger.git; then
+    if ! can_access_repo git@github.com:cjnowacek/mcp-chat-logger.git; then
       log "Warning: no access to MCP-Chat-Logger (private repo) — skipping"
       return
     fi
-    git clone git@github.com:cjnowacek/MCP-Chat-Logger.git "$repo_dir"
+    git clone git@github.com:cjnowacek/mcp-chat-logger.git "$repo_dir"
   else
     git -C "$repo_dir" stash
     git -C "$repo_dir" pull --rebase
@@ -652,11 +652,11 @@ setup_zk_vault() {
 
   # Clone or pull
   if [ ! -d "$repo_dir/.git" ]; then
-    if ! can_access_repo git@github.com:cjnowacek/ZK.git; then
+    if ! can_access_repo git@github.com:cjnowacek/zettelpara.git; then
       log "Warning: no access to ZK (private repo) — skipping"
       return
     fi
-    git clone git@github.com:cjnowacek/ZK.git "$repo_dir"
+    git clone git@github.com:cjnowacek/zettelpara.git "$repo_dir"
   else
     git -C "$repo_dir" pull --rebase || log "Warning: could not pull ZK (dirty worktree?)"
     log "ZK already cloned"
@@ -679,11 +679,11 @@ setup_ai_chats() {
 
   # Clone or pull
   if [ ! -d "$repo_dir/.git" ]; then
-    if ! can_access_repo git@github.com:cjnowacek/AI-Chats.git; then
+    if ! can_access_repo git@github.com:cjnowacek/ai-chats.git; then
       log "Warning: no access to AI-Chats (private repo) — skipping"
       return
     fi
-    git clone git@github.com:cjnowacek/AI-Chats.git "$repo_dir"
+    git clone git@github.com:cjnowacek/ai-chats.git "$repo_dir"
   else
     git -C "$repo_dir" pull --rebase || log "Warning: could not pull AI-Chats (dirty worktree?)"
     log "AI-Chats already cloned"
