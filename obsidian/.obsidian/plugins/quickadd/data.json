@@ -1,0 +1,139 @@
+{
+  "choices": [
+    {
+      "id": "dd62ab75-cdf0-4757-ac4c-2e3b0e15140d",
+      "name": "ML3DS Meeting",
+      "type": "Template",
+      "command": false,
+      "templatePath": "99-system/templates/_meeting.md",
+      "fileNameFormat": {
+        "enabled": true,
+        "format": "{{DATE}} - {{VALUE}}"
+      },
+      "discoverExistingNotesBeforeCreate": false,
+      "folder": {
+        "enabled": true,
+        "folders": [
+          "1-career/ml3ds/meetings"
+        ],
+        "chooseWhenCreatingNote": false,
+        "createInSameFolderAsActiveFile": false,
+        "chooseFromSubfolders": false
+      },
+      "appendLink": false,
+      "copyLinkToClipboard": false,
+      "openFile": true,
+      "fileOpening": {
+        "location": "tab",
+        "direction": "vertical",
+        "mode": "default",
+        "focus": true
+      },
+      "fileExistsBehavior": {
+        "kind": "prompt"
+      }
+    },
+    {
+      "id": "fd619eaa-f28b-410c-8058-c6cc3342ef87",
+      "name": "T&T Meeting",
+      "type": "Template",
+      "command": false,
+      "templatePath": "99-system/templates/_meeting.md",
+      "fileNameFormat": {
+        "enabled": true,
+        "format": "{{DATE}} - {{VALUE}}"
+      },
+      "discoverExistingNotesBeforeCreate": false,
+      "folder": {
+        "enabled": true,
+        "folders": [
+          "2-dev/games/titans-and-traitors/meetings"
+        ],
+        "chooseWhenCreatingNote": false,
+        "createInSameFolderAsActiveFile": false,
+        "chooseFromSubfolders": false
+      },
+      "appendLink": false,
+      "copyLinkToClipboard": false,
+      "openFile": true,
+      "fileOpening": {
+        "location": "tab",
+        "direction": "vertical",
+        "mode": "default",
+        "focus": true
+      },
+      "fileExistsBehavior": {
+        "kind": "prompt"
+      }
+    },
+    {
+      "id": "cb81258e-bcbb-472d-97cd-e74b64153323",
+      "name": "Ask Misha",
+      "type": "Template",
+      "command": false,
+      "templatePath": "99-system/templates/_meeting.md",
+      "fileNameFormat": {
+        "enabled": true,
+        "format": "KubeCraft Ask Misha - {{VALUE}}"
+      },
+      "discoverExistingNotesBeforeCreate": false,
+      "folder": {
+        "enabled": true,
+        "folders": [
+          "2-dev/kubecraft"
+        ],
+        "chooseWhenCreatingNote": false,
+        "createInSameFolderAsActiveFile": false,
+        "chooseFromSubfolders": false
+      },
+      "appendLink": false,
+      "copyLinkToClipboard": false,
+      "openFile": true,
+      "fileOpening": {
+        "location": "tab",
+        "direction": "vertical",
+        "mode": "default",
+        "focus": true
+      },
+      "fileExistsBehavior": {
+        "kind": "prompt"
+      }
+    },
+    {
+      "id": "7f2c6ec1-f105-498a-bd86-ed78b1f30c94",
+      "name": "New Zettel",
+      "type": "Template",
+      "command": false,
+      "templatePath": "99-system/templates/_zettel.md",
+      "fileNameFormat": {
+        "enabled": true,
+        "format": "{{VALUE}}"
+      },
+      "discoverExistingNotesBeforeCreate": false,
+      "folder": {
+        "enabled": true,
+        "folders": [
+          "zettel"
+        ],
+        "chooseWhenCreatingNote": false,
+        "createInSameFolderAsActiveFile": false,
+        "chooseFromSubfolders": false
+      },
+      "appendLink": false,
+      "copyLinkToClipboard": false,
+      "openFile": true,
+      "fileOpening": {
+        "location": "tab",
+        "direction": "vertical",
+        "mode": "default",
+        "focus": true
+      },
+      "fileExistsBehavior": {
+        "kind": "prompt"
+      }
+    }
+  ],
+  "macros": [],
+  "inputPrompt": "single-line",
+  "version": "2.19.1"
+}
