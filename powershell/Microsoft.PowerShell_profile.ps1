@@ -42,6 +42,10 @@ function wsltool { wsl @args }
 $Dev = 'C:\dev'
 function titans { Set-Location (Join-Path $Dev 'titans-and-traitors') }
 
+# --- zk notebook (parallels the export in zsh/bash rc) ---------------------
+# Makes `zk daily|letter|work|sync` work from any directory.
+$env:ZK_NOTEBOOK_DIR = Join-Path $Dev 'zettlepara'
+
 # --- PATH: user-local bin (parallels ~/.local/bin) -------------------------
 $LocalBin = Join-Path $HOME '.local\bin'
 if ((Test-Path $LocalBin) -and ($env:Path -notlike "*$LocalBin*")) {

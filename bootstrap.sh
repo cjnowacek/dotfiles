@@ -506,7 +506,7 @@ setup_bash_tools() {
   mkdir -p "$HOME/dev"
 
   if [ ! -d "$HOME/dev/bash/.git" ]; then
-    git clone https://github.com/cjnowacek/bash.git "$HOME/dev/bash"
+    git clone git@github.com:cjnowacek/bash.git "$HOME/dev/bash"
   else
     git -C "$HOME/dev/bash" pull --rebase
   fi
