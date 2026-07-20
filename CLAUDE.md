@@ -35,7 +35,12 @@ Each subdirectory mirrors the target path from `$HOME`. The bootstrap script (`b
 - `DOTFILES_DIR` in `bootstrap.sh` must stay as `$HOME/.dotfiles`
 - `.bashrc` and `.zshrc` both source `$HOME/.dotfiles/unix/.unix_aliases`
 - Neovim config uses LazyVim (lazy.nvim plugin manager)
-- `bootstrap.sh` also installs system deps, oh-my-zsh, rust, node, neovim, zk, and configures MCP chat-logger; the repos it clones (bash, mcp-chat-logger, zettelpara, ai-chats) go into `~/dev/`, matching the Windows `C:\dev` convention
+- `bootstrap.sh` also installs system deps, oh-my-zsh, rust, node, neovim, zk, Claude Code, and configures MCP chat-logger; the repos it clones (bash, mcp-chat-logger, zettelpara, ai-chats) go into `~/dev/`, matching the Windows `C:\dev` convention
+- Claude Code is installed natively on both OSes (`install.sh` / `install.ps1`, not npm) and the
+  `coder/claudecode.nvim` plugin (`nvim/.config/nvim/lua/plugins/claudecode.lua`) shells out to
+  the `claude` binary on PATH. Keybinds are under `<leader>a`; the terminal comes from
+  snacks.nvim, which LazyVim already ships. Run it from the nvim terminal split or PowerShell,
+  not raw Git Bash (no TTY, so the interactive CLI errors with "Raw mode is not supported")
 - Shell aliases live in `unix/.unix_aliases`, not in the rc files directly
 - `setup_obsidian()` links `obsidian/.obsidian` into each vault. Defaults to `~/dev/zettelpara`
   and `~/dev/ai-chats`; override with `VAULTS="/path/a /path/b" ./bootstrap.sh`. Vaults that
@@ -52,10 +57,16 @@ clone (e.g. `C:\dev\dotfiles`) for the Windows-native pieces. Same repo/history;
   Junctions `nvim/.config/nvim` → `%LOCALAPPDATA%\nvim`, writes a `$PROFILE` stub that
   dot-sources `powershell/Microsoft.PowerShell_profile.ps1`, junctions
   `obsidian/.obsidian` into each vault (Windows counterpart of `setup_obsidian()` in
-  `bootstrap.sh`; vault list defaults to `C:\dev\zettlepara` and `C:\dev\ai-chats`,
+  `bootstrap.sh`; vault list defaults to `C:\dev\zettlepara` and `C:\devi-chats`,
   override with `-Vaults`, missing vaults are skipped), and clones/updates repos into
   `C:\dev` over SSH (bash, mcp-chat-logger always; zettelpara, ai-chats behind y/N prompts),
   mirroring `bootstrap.sh`'s repo setup.
+- `bootstrap.ps1` also winget-installs the native tools the config assumes (neovim, git,
+  ripgrep, fd, eza, zig, Claude Code) via `Install-Pkg`, which skips anything already on PATH
+  and warns instead of aborting on failure. Rough counterpart of `install_dependencies()` +
+  `install_neovim()` in `bootstrap.sh`. The WinLibs gcc entry is there only because
+  nvim-treesitter compiles parsers: its `main` branch probes for `cc`/`gcc` specifically, so
+  zig does not satisfy the check even though it compiles C. WinLibs needs no Visual Studio.
 - **Keep `bootstrap.ps1` ASCII-only.** It has no BOM, so Windows PowerShell 5.1 decodes it as
   ANSI; a non-ASCII character such as an em dash decodes to a curly quote, which the parser
   treats as a string delimiter, and the whole script fails to parse.

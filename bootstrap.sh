@@ -440,6 +440,28 @@ install_zk() {
   log "zk installed successfully"
 }
 
+# Install Claude Code CLI (native binary; the nvim plugin shells out to it)
+install_claude_code() {
+  log_step "Installing Claude Code"
+
+  if command -v claude >/dev/null 2>&1; then
+    log "claude already installed: $(claude --version)"
+    return 0
+  fi
+
+  curl -fsSL https://claude.ai/install.sh | bash
+
+  # The installer drops the binary in ~/.local/bin, which may not be on PATH yet
+  export PATH="$HOME/.local/bin:$PATH"
+
+  claude --version || {
+    log_error "Claude Code installation failed"
+    return 1
+  }
+
+  log "Claude Code installed successfully"
+}
+
 # Setup Python environment
 setup_python() {
   log_step "Setting up Python environment"
@@ -808,6 +830,7 @@ main() {
   setup_ai_chats
   setup_zk_vault
   install_zk
+  install_claude_code
   install_neovim
   install_oh_my_zsh
   create_directories

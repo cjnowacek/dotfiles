@@ -13,6 +13,10 @@
       - Repos: clones/updates CJ's repos into C:\dev over SSH
         (mirrors bootstrap.sh's repo setup on the Linux side)
 
+    Then winget-installs the native tools that config assumes: neovim, git,
+    ripgrep, fd, eza, zig (for treesitter), and the Claude Code CLI. Anything
+    already on PATH is skipped, and a failed install warns rather than aborts.
+
     Windows counterpart of setup_obsidian() in bootstrap.sh. Pass -Vaults to
     override the default vault list.
 
@@ -76,6 +80,34 @@ if (Test-Path `$__dotfilesProfile) { . `$__dotfilesProfile }
 "@
     Set-Content -Path $ProfilePath -Value $stub -Encoding UTF8
     Write-Info "Wrote profile stub -> sources $Target"
+}
+
+# Install a package via winget, skipping if the command is already on PATH.
+# Windows counterpart of install_dependencies()/install_neovim() in bootstrap.sh.
+# Never fatal: a failed optional tool should not abort the rest of bootstrap.
+function Install-Pkg([string]$Cmd, [string]$Id, [string]$Why) {
+    if (Get-Command $Cmd -ErrorAction SilentlyContinue) {
+        Write-Info "already installed: $Cmd"
+        return
+    }
+    if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+        Write-Info "winget missing - install $Id by hand ($Why)"
+        return
+    }
+    Write-Info "installing $Id ($Why)"
+    try {
+        winget install --id $Id -e --accept-package-agreements --accept-source-agreements --disable-interactivity
+        if ($LASTEXITCODE -ne 0) {
+            Write-Info "winget exit $LASTEXITCODE for $Id - check manually"
+        }
+        # winget edits the PERSISTED PATH; this process keeps the environment it
+        # started with. Re-read it so later Install-Pkg calls (and anything else
+        # below) can actually see what was just installed.
+        $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' +
+                    [Environment]::GetEnvironmentVariable('Path', 'User')
+    } catch {
+        Write-Info "install failed for ${Id}: $($_.Exception.Message)"
+    }
 }
 
 Write-Host "Dotfiles - Windows setup"
@@ -169,15 +201,34 @@ if (Get-Command git -ErrorAction SilentlyContinue) {
     Write-Info "git not found - skipping repo setup"
 }
 
-# 5. Optional: nudge for native tools that the profile/aliases assume
-Write-Step "Recommended native tools (optional)"
-foreach ($t in 'nvim','eza','git') {
-    if (Get-Command $t -ErrorAction SilentlyContinue) {
-        Write-Info "found: $t"
-    } else {
-        Write-Info "missing: $t  (winget install ...)  - some aliases need it"
+# 5. Claude Code CLI (native install; the nvim claudecode plugin shells out to it)
+Write-Step "Claude Code"
+if (Get-Command claude -ErrorAction SilentlyContinue) {
+    Write-Info "claude already installed: $(claude --version)"
+} else {
+    try {
+        Invoke-RestMethod https://claude.ai/install.ps1 | Invoke-Expression
+        Write-Info "Claude Code installed - reopen the terminal so PATH picks it up"
+    } catch {
+        Write-Info "Claude Code install failed: $($_.Exception.Message)"
+        Write-Info "Install manually:  irm https://claude.ai/install.ps1 | iex"
     }
 }
 
+# 6. Native tools the nvim config and the aliases assume
+Write-Step "Native tools"
+Install-Pkg 'nvim' 'Neovim.Neovim'            'the editor itself'
+Install-Pkg 'git'  'Git.Git'                  'plugin fetching, and a real Bash for Claude Code'
+Install-Pkg 'rg'   'BurntSushi.ripgrep.MSVC'  'Telescope live_grep'
+Install-Pkg 'fd'   'sharkdp.fd'               'Telescope find_files'
+Install-Pkg 'eza'  'eza-community.eza'        'ls aliases in the profile'
+# nvim-treesitter compiles parsers and needs a real C compiler. Its `main`
+# branch probes for cc/gcc specifically, so zig does NOT satisfy the check even
+# though it can compile C. WinLibs is the gcc build treesitter itself suggests,
+# and needs no Visual Studio install.
+Install-Pkg 'gcc'  'BrechtSanders.WinLibs.POSIX.UCRT' 'nvim-treesitter parser compilation'
+
 Write-Step "Done"
-Write-Info "Restart your terminal, or reload now:  . `$PROFILE"
+Write-Info "Restart your terminal so PATH picks up anything just installed."
+Write-Info "Then run  nvim  once: lazy.nvim bootstraps and installs every plugin."
+Write-Info "Reload the profile in place with:  . `$PROFILE"
