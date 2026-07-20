@@ -120,3 +120,5 @@ export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
 export PATH="$PATH:/home/seejay/.lmstudio/bin"
 # End of LM Studio CLI section
 
+
+. "$HOME/.local/share/../bin/env"

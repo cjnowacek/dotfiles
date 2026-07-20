@@ -122,3 +122,5 @@ export LD_LIBRARY_PATH=/opt/cuda/lib64:$LD_LIBRARY_PATH
 export PATH="$PATH:/home/seejay/.lmstudio/bin"
 # End of LM Studio CLI section
 
+
+. "$HOME/.local/share/../bin/env"
