@@ -228,6 +228,35 @@ Install-Pkg 'eza'  'eza-community.eza'        'ls aliases in the profile'
 # and needs no Visual Studio install.
 Install-Pkg 'gcc'  'BrechtSanders.WinLibs.POSIX.UCRT' 'nvim-treesitter parser compilation'
 
+# 7. zk CLI (not on winget; fetch the latest GitHub release binary).
+# The PowerShell profile sets ZK_NOTEBOOK_DIR, and the vault's CLAUDE.md
+# documents the zk d/l/w workflow -- this makes that work on Windows too.
+Write-Step "zk"
+if (Get-Command zk -ErrorAction SilentlyContinue) {
+    Write-Info "zk already installed: $(zk --version)"
+} else {
+    try {
+        $rel = Invoke-RestMethod 'https://api.github.com/repos/zk-org/zk/releases/latest'
+        $asset = $rel.assets | Where-Object { $_.name -like '*-windows-x86_64.tar.gz' } | Select-Object -First 1
+        if (-not $asset) { throw "no windows-x86_64 asset in release $($rel.tag_name)" }
+        $dest = Join-Path $env:LOCALAPPDATA 'Programs\zk'
+        New-Item -ItemType Directory -Force -Path $dest | Out-Null
+        $tmp = Join-Path $env:TEMP $asset.name
+        Invoke-WebRequest $asset.browser_download_url -OutFile $tmp
+        tar -xzf $tmp -C $dest          # bsdtar ships with Windows 10+
+        Remove-Item $tmp
+        $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
+        if ($userPath -notlike "*$dest*") {
+            [Environment]::SetEnvironmentVariable('Path', "$userPath;$dest", 'User')
+            Write-Info "added $dest to user PATH"
+        }
+        Write-Info "zk $($rel.tag_name) installed to $dest - reopen the terminal so PATH picks it up"
+    } catch {
+        Write-Info "zk install failed: $($_.Exception.Message)"
+        Write-Info "Install manually: https://github.com/zk-org/zk/releases"
+    }
+}
+
 Write-Step "Done"
 Write-Info "Restart your terminal so PATH picks up anything just installed."
 Write-Info "Then run  nvim  once: lazy.nvim bootstraps and installs every plugin."
