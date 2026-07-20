@@ -660,31 +660,31 @@ create_directories() {
   log "Directories created"
 }
 
-# Setup ZK vault (optional)
-setup_zk_vault() {
-  log_step "ZK vault"
+# Setup zettelpara vault (optional)
+setup_zettelpara_vault() {
+  log_step "Zettelpara vault"
 
   local repo_dir="$HOME/dev/zettelpara"
 
-  read -rp ":: Clone ZK repo? [y/N] " answer
+  read -rp ":: Clone zettelpara repo? [y/N] " answer
   if [[ ! "$answer" =~ ^[Yy]$ ]]; then
-    log "Skipping ZK"
+    log "Skipping zettelpara"
     return
   fi
 
   # Clone or pull
   if [ ! -d "$repo_dir/.git" ]; then
     if ! can_access_repo git@github.com:cjnowacek/zettelpara.git; then
-      log "Warning: no access to ZK (private repo) — skipping"
+      log "Warning: no access to zettelpara (private repo) — skipping"
       return
     fi
     git clone git@github.com:cjnowacek/zettelpara.git "$repo_dir"
   else
-    git -C "$repo_dir" pull --rebase || log "Warning: could not pull ZK (dirty worktree?)"
-    log "ZK already cloned"
+    git -C "$repo_dir" pull --rebase || log "Warning: could not pull zettelpara (dirty worktree?)"
+    log "zettelpara already cloned"
   fi
 
-  log "ZK setup complete"
+  log "zettelpara setup complete"
 }
 
 # Setup AI-Chats project (optional)
@@ -828,7 +828,7 @@ main() {
   install_nodejs
   setup_mcp_chat_logger
   setup_ai_chats
-  setup_zk_vault
+  setup_zettelpara_vault
   install_zk
   install_claude_code
   install_neovim
