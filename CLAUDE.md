@@ -57,7 +57,7 @@ clone (e.g. `C:\dev\dotfiles`) for the Windows-native pieces. Same repo/history;
   Junctions `nvim/.config/nvim` → `%LOCALAPPDATA%\nvim`, writes a `$PROFILE` stub that
   dot-sources `powershell/Microsoft.PowerShell_profile.ps1`, junctions
   `obsidian/.obsidian` into each vault (Windows counterpart of `setup_obsidian()` in
-  `bootstrap.sh`; vault list defaults to `C:\dev\zettlepara` and `C:\devi-chats`,
+  `bootstrap.sh`; vault list defaults to `C:\dev\zettelpara` and `C:\dev\ai-chats`,
   override with `-Vaults`, missing vaults are skipped), and clones/updates repos into
   `C:\dev` over SSH (bash, mcp-chat-logger always; zettelpara, ai-chats behind y/N prompts),
   mirroring `bootstrap.sh`'s repo setup.

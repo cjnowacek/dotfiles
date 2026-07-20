@@ -14,8 +14,9 @@
         (mirrors bootstrap.sh's repo setup on the Linux side)
 
     Then winget-installs the native tools that config assumes: neovim, git,
-    ripgrep, fd, eza, zig (for treesitter), and the Claude Code CLI. Anything
-    already on PATH is skipped, and a failed install warns rather than aborts.
+    ripgrep, fd, eza, gcc (WinLibs, for treesitter), and the Claude Code CLI.
+    Anything already on PATH is skipped, and a failed install warns rather
+    than aborts.
 
     Windows counterpart of setup_obsidian() in bootstrap.sh. Pass -Vaults to
     override the default vault list.
@@ -31,7 +32,7 @@
 param(
     # Vaults to link the Obsidian config into. Windows equivalent of the
     # vaults list in bootstrap.sh's setup_obsidian(). Missing ones are skipped.
-    [string[]]$Vaults = @('C:\dev\zettlepara', 'C:\dev\ai-chats')
+    [string[]]$Vaults = @('C:\dev\zettelpara', 'C:\dev\ai-chats')
 )
 
 $ErrorActionPreference = 'Stop'
