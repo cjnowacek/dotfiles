@@ -1,6 +1,6 @@
 {
   "command_timeout": 5,
-  "templates_folder": "Templates",
+  "templates_folder": "99-system/templates",
   "templates_pairs": [
     [
       "",
@@ -11,8 +11,8 @@
   "auto_jump_to_cursor": false,
   "enable_system_commands": false,
   "shell_path": "",
-  "user_scripts_folder": "Templates/Scripts",
-  "enable_folder_templates": true,
+  "user_scripts_folder": "99-system/templates/scripts",
+  "enable_folder_templates": false,
   "folder_templates": [
     {
       "folder": "",
@@ -34,5 +34,10 @@
   "startup_templates": [
     ""
   ],
-  "intellisense_render": 1
+  "intellisense_render": 1,
+  "ignore_folders_on_creation": [
+    {
+      "folder": ""
+    }
+  ]
 }
