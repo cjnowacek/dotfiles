@@ -759,8 +759,8 @@ final_steps() {
   if [[ "$install_obsidian" =~ ^[Yy]$ ]]; then
     case "$PKG_MANAGER" in
     pacman)
-      log "Obsidian is available via AUR (e.g. 'yay -S obsidian')"
-      log "Install an AUR helper first if you don't have one"
+      # Obsidian moved from the AUR into the official extra repo.
+      sudo pacman -S --needed --noconfirm obsidian
       ;;
     apt)
       local obsidian_deb="/tmp/obsidian.deb"

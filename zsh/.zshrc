@@ -124,3 +124,6 @@ export PATH="$PATH:/home/seejay/.lmstudio/bin"
 
 
 . "$HOME/.local/share/../bin/env"
+
+# zk notebook — makes `zk daily|letter|work|sync` work from any directory
+export ZK_NOTEBOOK_DIR="$HOME/dev/zettelpara"
