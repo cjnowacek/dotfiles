@@ -263,6 +263,39 @@
       "fileExistsBehavior": {
         "kind": "prompt"
       }
+    },
+    {
+      "id": "02e4824a-a04e-4612-843c-6a13cee72cf6",
+      "name": "New Story",
+      "type": "Template",
+      "command": false,
+      "templatePath": "99-system/templates/_story.md",
+      "fileNameFormat": {
+        "enabled": true,
+        "format": "{{VALUE}}"
+      },
+      "discoverExistingNotesBeforeCreate": false,
+      "folder": {
+        "enabled": true,
+        "folders": [
+          "4-library/stories/0-library"
+        ],
+        "chooseWhenCreatingNote": false,
+        "createInSameFolderAsActiveFile": false,
+        "chooseFromSubfolders": false
+      },
+      "appendLink": false,
+      "copyLinkToClipboard": false,
+      "openFile": true,
+      "fileOpening": {
+        "location": "tab",
+        "direction": "vertical",
+        "mode": "default",
+        "focus": true
+      },
+      "fileExistsBehavior": {
+        "kind": "prompt"
+      }
     }
   ],
   "inputPrompt": "single-line",
