@@ -433,18 +433,13 @@
   "inputPrompt": "single-line",
   "persistInputPromptDrafts": true,
   "useSelectionAsCaptureValue": true,
-  "searchNestedChoices": true,
-  "templateFolderLauncherRow": "bottom",
   "devMode": false,
-  "templateFolderPaths": [
-    "99-system/templates"
-  ],
+  "templateFolderPath": "",
   "announceUpdates": "major",
-  "version": "2.19.1",
+  "version": "2.12.3",
   "globalVariables": {},
   "onePageInputEnabled": false,
   "disableOnlineFeatures": true,
-  "enableUriCallbacks": false,
   "enableRibbonIcon": false,
   "showCaptureNotification": true,
   "showInputCancellationNotification": false,
@@ -616,5 +611,11 @@
     "migrateToMultipleTemplateFolders": true,
     "refreshStaleDefaultModelSeeds": true,
     "pinAiModelRefs": true
-  }
+  },
+  "searchNestedChoices": true,
+  "templateFolderLauncherRow": "bottom",
+  "templateFolderPaths": [
+    "99-system/templates"
+  ],
+  "enableUriCallbacks": false
 }
