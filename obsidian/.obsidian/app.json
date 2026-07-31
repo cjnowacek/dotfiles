@@ -1,11 +1,3 @@
 {
-  "alwaysUpdateLinks": true,
-  "promptDelete": false,
-  "openBehavior": "daily",
-  "vimMode": true,
-  "readableLineLength": true,
-  "showLineNumber": true,
-  "attachmentFolderPath": "/",
-  "newFileLocation": "folder",
-  "newFileFolderPath": "_Inbox"
+  "alwaysUpdateLinks": true
 }
