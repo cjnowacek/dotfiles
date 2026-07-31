@@ -334,6 +334,13 @@ setup_hyprland() {
   log "Hyprland configuration linked"
 }
 
+# Setup Waybar configuration (status bar for Hyprland)
+setup_waybar() {
+  log_step "Setting up Waybar configuration"
+
+  create_symlink "$DOTFILES_DIR/waybar/.config/waybar" "$HOME/.config/waybar"
+}
+
 # Setup Obsidian configuration
 setup_obsidian() {
   log_step "Setting up Obsidian configuration"
@@ -837,6 +844,7 @@ main() {
   setup_shell
   setup_neovim
   setup_hyprland
+  setup_waybar
   setup_obsidian
   setup_python
   setup_ssh_agent

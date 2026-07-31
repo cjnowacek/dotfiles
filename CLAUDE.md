@@ -15,6 +15,7 @@ dotfiles/
 ├── zsh/.zshrc            → ~/.zshrc
 ├── nvim/.config/nvim/    → ~/.config/nvim
 ├── hypr/.config/hypr/    → ~/.config/hypr
+├── waybar/.config/waybar/ → ~/.config/waybar
 ├── obsidian/.obsidian/   → <vault>/.obsidian   (each vault; both OSes)
 ├── unix/.unix_aliases    (sourced by both .bashrc and .zshrc)
 ├── bootstrap.sh          (full system setup script)
@@ -76,7 +77,7 @@ clone (e.g. `C:\dev\dotfiles`) for the Windows-native pieces. Same repo/history;
   for a plain user, entirely under the Windows user home (`%LOCALAPPDATA%`, `%USERPROFILE%`),
   and edits flow through on `git pull`. Good for locked-down work machines.
 - **nvim**, the **aliases**, and the **Obsidian config** are shared. `hypr/`, `bootstrap.sh`,
-  and the oh-my-zsh setup are Linux-only, no Windows counterpart.
+  `waybar/`, and the oh-my-zsh setup are Linux-only, no Windows counterpart.
 - Obsidian plugin code (`plugins/*/main.js`, `manifest.json`, `themes/`) is gitignored by
   `obsidian/.obsidian/.gitignore`; only settings and `community-plugins.json` are tracked, so
   plugins reinstall from the community browser on first launch. Same on both OSes.
