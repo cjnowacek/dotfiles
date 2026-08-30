@@ -27,6 +27,7 @@ tooltip label {
     border: none;
     border-radius: 4px;
     margin: 3px 2px;
+    transition: background 100ms ease, color 100ms ease;
 }
 
 #workspaces button.active {
@@ -38,6 +39,11 @@ tooltip label {
     background: rgba(137, 180, 250, 0.1);
 }
 
+#window {
+    padding: 0 12px;
+    color: #b4befe;
+}
+
 #clock,
 #pulseaudio,
 #network,
@@ -46,6 +52,16 @@ tooltip label {
 #custom-dropbox,
 #tray {
     padding: 0 12px;
+    border-radius: 4px;
+    transition: background 100ms ease;
+}
+
+/* hover feedback on the clickable modules */
+#pulseaudio:hover,
+#cpu:hover,
+#memory:hover,
+#custom-dropbox:hover {
+    background: rgba(137, 180, 250, 0.12);
 }
 
 #custom-dropbox {
