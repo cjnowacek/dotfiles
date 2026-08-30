@@ -51,6 +51,27 @@ Two Linux machines share the repo: a **desktop** (dual Dell 4K on NVIDIA) and a
   changes the hosts layout, run `./bootstrap.sh links` — it redoes only the
   symlinks (shell, nvim, hypr, waybar) and skips all installs.
 
+## First pull on the desktop after the hosts/ restructure (2026-08-30)
+
+The split moved the desktop's `hypridle.conf`, `hyprlock.conf`, `hyprpaper.conf`,
+and waybar `config.jsonc`/`style.css` into `hosts/desktop/`, so the pull deletes
+the old top-level files. **Run `./bootstrap.sh links` immediately after pulling**
+to recreate them as symlinks — until then hyprlock/hypridle have no config, so
+don't reboot, log out, or lock in between. Then verify before ending the session:
+`hyprctl reload && hyprctl configerrors` must be clean and
+`hyprctl binds | grep -c "^bind"` should be ~71 — check the bind *count*, not
+just parse errors. Commit 56f2cfc in history shipped a config that parsed clean
+with zero binds (the laptop needed boot-media recovery); the fix is 130606a.
+Two more gotchas:
+
+- `links` also symlinks `~/.zprofile` (auto-`exec Hyprland` on TTY1 login). If
+  the desktop had its own `~/.zprofile`, it's backed up to
+  `~/.dotfiles-backup-<timestamp>/` — check it for lines worth merging.
+- Hyprland 0.56+ with an empty/missing config dir silently autogenerates a
+  **Lua** config (`hyprland.lua`) instead of erroring, and that session ignores
+  `hyprland.conf` until a full relogin — `hyprctl systeminfo | grep configProvider`
+  should say `hyprlang`, not `lua`. `hyprctl reload` cannot switch providers.
+
 ## Key details
 
 - `DOTFILES_DIR` in `bootstrap.sh` must stay as `$HOME/.dotfiles`
