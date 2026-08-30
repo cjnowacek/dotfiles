@@ -50,10 +50,6 @@ Two Linux machines share the repo: a **desktop** (dual Dell 4K on NVIDIA) and a
   `hypr/.config/hypr/host.conf → hosts/laptop/host.conf`). After a pull that
   changes the hosts layout, run `./bootstrap.sh links` — it redoes only the
   symlinks (shell, nvim, hypr, waybar) and skips all installs.
-- The laptop runs an older Hyprland (0.52), so windowrules + vfr are duplicated
-  in both `host.conf` files in their respective dialects (block `windowrule {}`
-  / `debug:vfr` on desktop, `windowrulev2` / `misc:vfr` on laptop). Fold them
-  back into the shared file once the laptop's Hyprland is current.
 
 ## Key details
 
