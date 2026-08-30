@@ -106,7 +106,18 @@ install_dependencies() {
   case "$PKG_MANAGER" in
   pacman)
     log "Using pacman"
-    sudo pacman -Syu --noconfirm
+
+    # An aborted pacman leaves a stale lock that fails every later run.
+    # Only remove it when no pacman is actually running.
+    if [[ -f /var/lib/pacman/db.lck ]] && ! pgrep -x pacman >/dev/null; then
+      log "Removing stale pacman lock (no pacman running)"
+      sudo rm -f /var/lib/pacman/db.lck
+    fi
+
+    # On a machine that hasn't updated in months the old keyring rejects
+    # current package signatures ("marginal trust"), so refresh it first.
+    sudo pacman -Sy --noconfirm archlinux-keyring
+    sudo pacman -Su --noconfirm
 
     if [[ "$IS_WSL" == true ]]; then
       # WSL doesn't need xclip (uses Windows clipboard)
@@ -134,6 +145,20 @@ install_dependencies() {
         eza \
         pandoc \
         zsh
+    fi
+
+    # Everything the hypr/waybar configs exec or bind. The configs land on
+    # every Linux machine, so a missing tool here is a silently dead keybind
+    # or autostart (this is how the laptop ran without dunst, cliphist, and
+    # the waybar Nerd Font icons for months).
+    if [[ "$IS_WSL" != true ]] && command -v Hyprland &>/dev/null; then
+      log "Installing Hyprland session tools"
+      sudo pacman -S --needed --noconfirm \
+        waybar hypridle hyprlock hyprpaper hyprsunset \
+        dunst cliphist wl-clipboard wofi \
+        grim slurp swappy playerctl brightnessctl \
+        thunar pavucontrol kitty \
+        ttf-jetbrains-mono-nerd
     fi
 
     # Install yay AUR helper
@@ -831,6 +856,94 @@ final_steps() {
 }
 
 # Main installation flow
+# Read-only health check: reports drift without changing anything.
+doctor() {
+  local ok=true
+
+  log_step "Doctor: symlink health"
+  local link target
+  for link in "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.zprofile" \
+    "$HOME/.config/nvim" "$HOME/.config/hypr" "$HOME/.config/waybar"; do
+    if [[ ! -e "$link" && ! -L "$link" ]]; then
+      log "MISSING  $link (run: ./bootstrap.sh links)"
+      ok=false
+    elif [[ ! -L "$link" ]]; then
+      log "NOT A LINK  $link is a real file/dir, not linked to the repo"
+      ok=false
+    elif [[ ! -e "$link" ]]; then
+      log "DANGLING  $link -> $(readlink "$link") (target gone; run: ./bootstrap.sh links)"
+      ok=false
+    else
+      target=$(readlink -f "$link")
+      if [[ "$target" != "$DOTFILES_DIR"/* ]]; then
+        log "FOREIGN  $link -> $target (outside $DOTFILES_DIR)"
+        ok=false
+      fi
+    fi
+  done
+
+  # Any other dangling links lying around $HOME and ~/.config
+  $ok && log "All linked into $DOTFILES_DIR"
+
+  local dangling
+  dangling=$(find "$HOME" -maxdepth 1 -xtype l 2>/dev/null
+    find "$HOME/.config" -maxdepth 1 -xtype l 2>/dev/null)
+  if [[ -n "$dangling" ]]; then
+    log "Other dangling symlinks:"
+    printf '     %s\n' $dangling
+    ok=false
+  fi
+
+  log_step "Doctor: per-host links (role: $HOST_ROLE)"
+  local f
+  for f in host.conf hypridle.conf hyprlock.conf hyprpaper.conf; do
+    if [[ "$(readlink "$DOTFILES_DIR/hypr/.config/hypr/$f" 2>/dev/null)" != "hosts/$HOST_ROLE/$f" ]]; then
+      log "WRONG/MISSING  hypr/$f should link to hosts/$HOST_ROLE/$f (run: ./bootstrap.sh links)"
+      ok=false
+    fi
+  done
+  for f in config.jsonc style.css; do
+    if [[ "$(readlink "$DOTFILES_DIR/waybar/.config/waybar/$f" 2>/dev/null)" != "hosts/$HOST_ROLE/$f" ]]; then
+      log "WRONG/MISSING  waybar/$f should link to hosts/$HOST_ROLE/$f (run: ./bootstrap.sh links)"
+      ok=false
+    fi
+  done
+
+  log_step "Doctor: tools the configs invoke"
+  local missing=()
+  local cmd
+  for cmd in waybar hypridle hyprlock dunst cliphist wofi grim slurp swappy \
+    playerctl brightnessctl wl-copy kitty nvim zsh; do
+    command -v "$cmd" &>/dev/null || missing+=("$cmd")
+  done
+  if ((${#missing[@]})); then
+    log "MISSING TOOLS: ${missing[*]}"
+    ok=false
+  else
+    log "All present"
+  fi
+
+  if command -v fc-list &>/dev/null && ! fc-list 2>/dev/null | grep -i "jetbrainsmono nerd" >/dev/null; then
+    log "MISSING FONT: JetBrainsMono Nerd Font (waybar/hyprlock icons will be tofu)"
+    ok=false
+  fi
+
+  log_step "Doctor: system"
+  if [[ -f /var/lib/pacman/db.lck ]] && ! pgrep -x pacman >/dev/null; then
+    log "STALE pacman lock: sudo rm /var/lib/pacman/db.lck"
+    ok=false
+  fi
+  if [[ -n "$(cd "$DOTFILES_DIR" && git status --porcelain 2>/dev/null)" ]]; then
+    log "Repo has uncommitted changes (git status in $DOTFILES_DIR)"
+  fi
+  local behind
+  behind=$(cd "$DOTFILES_DIR" && git rev-list --count HEAD..@{upstream} 2>/dev/null || echo 0)
+  [[ "$behind" -gt 0 ]] && log "Repo is $behind commit(s) behind origin — git pull, then ./bootstrap.sh links"
+
+  echo ""
+  if $ok; then log "Doctor: all clear"; else log "Doctor: issues found (see above)"; fi
+}
+
 main() {
   echo "Dotfiles Setup Script"
   echo ""
@@ -857,6 +970,12 @@ main() {
 
   detect_host_role
   log "Host role: $HOST_ROLE (override with DOTFILES_HOST=desktop|laptop)"
+
+  # `./bootstrap.sh doctor` — read-only drift report, changes nothing.
+  if [[ "${1:-}" == "doctor" ]]; then
+    doctor
+    return
+  fi
 
   # `./bootstrap.sh links` — only (re)create symlinks, e.g. after a pull that
   # changed the hosts/ layout. Skips all installs.
