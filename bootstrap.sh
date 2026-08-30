@@ -6,6 +6,18 @@ set -euo pipefail
 DOTFILES_DIR="$HOME/.dotfiles"
 BACKUP_DIR="$HOME/.dotfiles-backup-$(date +%Y%m%d-%H%M%S)"
 
+# Host role: picks which hosts/<role>/ configs get linked for hypr and waybar.
+# Auto-detected by battery presence; override with DOTFILES_HOST=desktop|laptop.
+detect_host_role() {
+  if [[ -n "${DOTFILES_HOST:-}" ]]; then
+    HOST_ROLE="$DOTFILES_HOST"
+  elif compgen -G "/sys/class/power_supply/BAT*" >/dev/null; then
+    HOST_ROLE="laptop"
+  else
+    HOST_ROLE="desktop"
+  fi
+}
+
 # Helper functions
 log() {
   echo ":: $1"
@@ -295,6 +307,7 @@ setup_shell() {
 
   create_symlink "$DOTFILES_DIR/bash/.bashrc" "$HOME/.bashrc"
   create_symlink "$DOTFILES_DIR/zsh/.zshrc" "$HOME/.zshrc"
+  create_symlink "$DOTFILES_DIR/zsh/.zprofile" "$HOME/.zprofile"
 
   log "Shell configurations linked"
 }
@@ -331,7 +344,14 @@ setup_hyprland() {
   fi
 
   ln -sf "$DOTFILES_DIR/hypr/.config/hypr" "$HOME/.config/hypr"
-  log "Hyprland configuration linked"
+
+  # Per-host configs: relative symlinks inside the repo dir (gitignored)
+  local hypr_dir="$DOTFILES_DIR/hypr/.config/hypr"
+  local f
+  for f in host.conf hypridle.conf hyprlock.conf hyprpaper.conf; do
+    ln -sfn "hosts/$HOST_ROLE/$f" "$hypr_dir/$f"
+  done
+  log "Hyprland configuration linked (host role: $HOST_ROLE)"
 }
 
 # Setup Waybar configuration (status bar for Hyprland)
@@ -339,6 +359,14 @@ setup_waybar() {
   log_step "Setting up Waybar configuration"
 
   create_symlink "$DOTFILES_DIR/waybar/.config/waybar" "$HOME/.config/waybar"
+
+  # Per-host configs: relative symlinks inside the repo dir (gitignored)
+  local waybar_dir="$DOTFILES_DIR/waybar/.config/waybar"
+  local f
+  for f in config.jsonc style.css; do
+    ln -sfn "hosts/$HOST_ROLE/$f" "$waybar_dir/$f"
+  done
+  log "Waybar configuration linked (host role: $HOST_ROLE)"
 }
 
 # Setup Obsidian configuration
@@ -826,6 +854,19 @@ main() {
   fi
 
   cd "$DOTFILES_DIR"
+
+  detect_host_role
+  log "Host role: $HOST_ROLE (override with DOTFILES_HOST=desktop|laptop)"
+
+  # `./bootstrap.sh links` — only (re)create symlinks, e.g. after a pull that
+  # changed the hosts/ layout. Skips all installs.
+  if [[ "${1:-}" == "links" ]]; then
+    setup_shell
+    setup_neovim
+    setup_hyprland
+    setup_waybar
+    return
+  fi
 
   # Run setup steps
   check_os

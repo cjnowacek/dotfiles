@@ -14,8 +14,8 @@ dotfiles/
 ├── bash/.bashrc          → ~/.bashrc
 ├── zsh/.zshrc            → ~/.zshrc
 ├── nvim/.config/nvim/    → ~/.config/nvim
-├── hypr/.config/hypr/    → ~/.config/hypr
-├── waybar/.config/waybar/ → ~/.config/waybar
+├── hypr/.config/hypr/    → ~/.config/hypr      (shared + hosts/, see below)
+├── waybar/.config/waybar/ → ~/.config/waybar   (hosts/ only, see below)
 ├── obsidian/.obsidian/   → <vault>/.obsidian   (each vault; both OSes)
 ├── unix/.unix_aliases    (sourced by both .bashrc and .zshrc)
 ├── bootstrap.sh          (full system setup script)
@@ -31,9 +31,35 @@ Each subdirectory mirrors the target path from `$HOME`. The bootstrap script (`b
 1. Place it under a subdirectory matching the tool name
 2. Add a `create_symlink` call in `bootstrap.sh`
 
+## Per-host configs (desktop vs laptop)
+
+Two Linux machines share the repo: a **desktop** (dual Dell 4K on NVIDIA) and a
+**laptop** (ThinkPad T480, Intel, eDP-1). Machine-specific config lives in
+`hosts/<role>/` directories:
+
+- `hypr/.config/hypr/hyprland.conf` is shared; its last line sources
+  `~/.config/hypr/host.conf`. `hosts/<role>/` holds `host.conf` (monitors, GPU
+  env, wallpaper daemon, laptop brightness keys), plus per-host `hypridle.conf`,
+  `hyprlock.conf`, and `hyprpaper.conf`.
+- `waybar/.config/waybar/hosts/<role>/` holds `config.jsonc` + `style.css`
+  (desktop bar has the dropbox module and output-pinned workspaces; laptop bar
+  has battery + window title). `scripts/` is shared.
+- `bootstrap.sh` detects the role by battery presence (`/sys/class/power_supply/BAT*`
+  → laptop), overridable with `DOTFILES_HOST=desktop|laptop`, and creates
+  **gitignored relative symlinks inside the repo** (e.g.
+  `hypr/.config/hypr/host.conf → hosts/laptop/host.conf`). After a pull that
+  changes the hosts layout, run `./bootstrap.sh links` — it redoes only the
+  symlinks (shell, nvim, hypr, waybar) and skips all installs.
+- The laptop runs an older Hyprland (0.52), so windowrules + vfr are duplicated
+  in both `host.conf` files in their respective dialects (block `windowrule {}`
+  / `debug:vfr` on desktop, `windowrulev2` / `misc:vfr` on laptop). Fold them
+  back into the shared file once the laptop's Hyprland is current.
+
 ## Key details
 
 - `DOTFILES_DIR` in `bootstrap.sh` must stay as `$HOME/.dotfiles`
+- After `git pull` on either machine, if `hosts/` or symlink layout changed, run
+  `./bootstrap.sh links` to refresh the per-host symlinks
 - `.bashrc` and `.zshrc` both source `$HOME/.dotfiles/unix/.unix_aliases`
 - Neovim config uses LazyVim (lazy.nvim plugin manager)
 - `bootstrap.sh` also installs system deps, oh-my-zsh, rust, node, neovim, zk, Claude Code, and configures MCP chat-logger; the repos it clones (bash, mcp-chat-logger, zettelpara, ai-chats) go into `~/dev/`, matching the Windows `C:\dev` convention
