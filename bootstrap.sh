@@ -890,15 +890,16 @@ WantedBy=default.target
 EOF
   systemctl --user daemon-reload
 
-  # Only start it when the remote actually exists — auth is a manual, per-
-  # machine step (`rclone config`, or copy ~/.config/rclone/rclone.conf from
-  # a machine that has it; the token is a secret and stays out of this repo).
+  # Never enabled at login — CJ wants the mount strictly on-demand: start it
+  # by right-clicking the waybar dropbox module (or systemctl --user start
+  # rclone-dropbox). Auth is a manual, per-machine step (`rclone config`, or
+  # copy ~/.config/rclone/rclone.conf from a machine that has it; the token
+  # is a secret and stays out of this repo).
   if rclone listremotes 2>/dev/null | grep -qx "dropbox:"; then
     mkdir -p "$HOME/Dropbox"
-    systemctl --user enable --now rclone-dropbox.service 2>/dev/null || true
-    log "rclone-dropbox service enabled"
+    log "rclone-dropbox service installed (on-demand; start from the waybar module)"
   else
-    log "rclone remote 'dropbox:' not configured — service installed but not enabled"
+    log "rclone remote 'dropbox:' not configured — service installed but unusable"
     log "  (run: rclone config   or copy ~/.config/rclone/rclone.conf from the desktop)"
   fi
 }
