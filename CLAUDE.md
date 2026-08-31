@@ -37,21 +37,37 @@ Two Linux machines share the repo: a **desktop** (dual Dell 4K on NVIDIA) and a
 **laptop** (ThinkPad T480, Intel, eDP-1). Machine-specific config lives in
 `hosts/<role>/` directories:
 
-- `hypr/.config/hypr/hyprland.conf` is shared; its last line sources
-  `~/.config/hypr/host.conf`. `hosts/<role>/` holds `host.conf` (monitors, GPU
-  env, wallpaper daemon, laptop brightness keys), plus per-host `hypridle.conf`,
-  `hyprlock.conf`, and `hyprpaper.conf`.
-- `waybar/.config/waybar/hosts/<role>/` holds `config.jsonc` + `style.css`.
-  The two bars are deliberately near-identical (Catppuccin, same modules);
-  they differ only where hardware does — desktop adds the dropbox module and
-  output-pinned workspaces, laptop adds battery. Port style changes to both.
-  `scripts/` is shared.
+Everything that can be shared IS shared in one tracked file; a host file holds
+only what hardware dictates. Per-host files are down to three:
+
+- `hypr/.config/hypr/hyprland.conf` (shared) sources `~/.config/hypr/host.conf`
+  as its last line → `hosts/<role>/host.conf`: monitors, GPU env, wallpaper
+  daemon autostart, laptop brightness keys.
+- `hosts/<role>/hypridle.conf`: genuinely different — the desktop's NVIDIA/DP
+  combo segfaults Hyprland on dpms-off, so it suspends instead; the laptop
+  stages lock → screen-off (+ brightness restore) → suspend.
+- `waybar/.config/waybar/config.jsonc` (shared) has
+  `"include": "$HOME/.config/waybar/host.jsonc"` → `hosts/<role>/host.jsonc`:
+  ONLY `modules-right` (battery vs dropbox-only) and `hyprland/workspaces`
+  (desktop pins them to outputs). Keys in the main file win over the include,
+  so never define those two keys in config.jsonc. Module definitions stay in
+  the shared file even when one host doesn't list them — unlisted is inert.
+  `style.css` is fully shared (CSS for absent modules is inert).
+- `hyprlock.conf` and `hyprpaper.conf` are shared tracked files (identical
+  needs on both machines; hyprpaper's empty `monitor =` covers any output).
 - `bootstrap.sh` detects the role by battery presence (`/sys/class/power_supply/BAT*`
   → laptop), overridable with `DOTFILES_HOST=desktop|laptop`, and creates
   **gitignored relative symlinks inside the repo** (e.g.
   `hypr/.config/hypr/host.conf → hosts/laptop/host.conf`). After a pull that
   changes the hosts layout, run `./bootstrap.sh links` — it redoes only the
   symlinks (shell, nvim, hypr, waybar) and skips all installs.
+
+**Pulling the 2026-08-30 shared-file consolidation over the older hosts/
+layout:** the pull creates tracked `waybar/config.jsonc`, `waybar/style.css`,
+`hypr/hyprlock.conf`, `hypr/hyprpaper.conf` where the old layout left
+untracked per-host symlinks — if git refuses the pull over those four paths,
+delete the symlinks and pull again, then run `./bootstrap.sh links` (it also
+cleans any stale ones and links `host.jsonc`).
 
 ## First pull on the desktop after the hosts/ restructure (2026-08-30)
 

@@ -1,4 +1,12 @@
 {
+    // Shared bar for both machines. The per-host part is only what hardware
+    // dictates: "modules-right" and "hyprland/workspaces" live in host.jsonc
+    // (a bootstrap-made symlink to hosts/<role>/host.jsonc). Keys defined
+    // here win over the include, so keep those two OUT of this file.
+    // Module definitions below are shared even when only one host lists
+    // them (battery, custom/dropbox) — unlisted modules are inert.
+    "include": "$HOME/.config/waybar/host.jsonc",
+
     "layer": "top",
     "position": "top",
     "height": 34,
@@ -6,14 +14,6 @@
 
     "modules-left": ["hyprland/workspaces", "hyprland/window"],
     "modules-center": ["clock"],
-    "modules-right": ["custom/dropbox", "tray", "pulseaudio", "network", "cpu", "memory", "battery"],
-
-    "hyprland/workspaces": {
-        "format": "{name}",
-        "on-click": "activate",
-        "on-scroll-up": "hyprctl dispatch workspace m-1",
-        "on-scroll-down": "hyprctl dispatch workspace m+1"
-    },
 
     "clock": {
         "format": "{:%a %b %d  %I:%M %p}",

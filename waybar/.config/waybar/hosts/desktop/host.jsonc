@@ -1,0 +1,15 @@
+{
+    // Desktop: no battery; workspaces pinned to their outputs.
+    "modules-right": ["custom/dropbox", "tray", "pulseaudio", "network", "cpu", "memory"],
+
+    "hyprland/workspaces": {
+        "format": "{name}",
+        "on-click": "activate",
+        "on-scroll-up": "hyprctl dispatch workspace m-1",
+        "on-scroll-down": "hyprctl dispatch workspace m+1",
+        "persistent-workspaces": {
+            "DP-1": [1, 2],
+            "HDMI-A-1": [3, 4]
+        }
+    }
+}

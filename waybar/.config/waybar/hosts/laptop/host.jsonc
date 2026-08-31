@@ -1,0 +1,11 @@
+{
+    // Laptop: battery on the bar; no output-pinned workspaces (one panel).
+    "modules-right": ["custom/dropbox", "tray", "pulseaudio", "network", "cpu", "memory", "battery"],
+
+    "hyprland/workspaces": {
+        "format": "{name}",
+        "on-click": "activate",
+        "on-scroll-up": "hyprctl dispatch workspace m-1",
+        "on-scroll-down": "hyprctl dispatch workspace m+1"
+    }
+}

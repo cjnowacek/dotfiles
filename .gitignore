@@ -48,7 +48,4 @@ nvim/.config/nvim/.mason/
 # (point at hypr/.config/hypr/hosts/<role>/ and waybar/.config/waybar/hosts/<role>/)
 hypr/.config/hypr/host.conf
 hypr/.config/hypr/hypridle.conf
-hypr/.config/hypr/hyprlock.conf
-hypr/.config/hypr/hyprpaper.conf
-waybar/.config/waybar/config.jsonc
-waybar/.config/waybar/style.css
+waybar/.config/waybar/host.jsonc

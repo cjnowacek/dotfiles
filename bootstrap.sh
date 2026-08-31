@@ -370,10 +370,15 @@ setup_hyprland() {
 
   ln -sf "$DOTFILES_DIR/hypr/.config/hypr" "$HOME/.config/hypr"
 
-  # Per-host configs: relative symlinks inside the repo dir (gitignored)
+  # Per-host configs: relative symlinks inside the repo dir (gitignored).
+  # hyprlock.conf and hyprpaper.conf are shared tracked files now — drop the
+  # symlinks left behind by the pre-2026-08-30 layout so they don't shadow.
   local hypr_dir="$DOTFILES_DIR/hypr/.config/hypr"
   local f
-  for f in host.conf hypridle.conf hyprlock.conf hyprpaper.conf; do
+  for f in hyprlock.conf hyprpaper.conf; do
+    [[ -L "$hypr_dir/$f" ]] && rm "$hypr_dir/$f"
+  done
+  for f in host.conf hypridle.conf; do
     ln -sfn "hosts/$HOST_ROLE/$f" "$hypr_dir/$f"
   done
   log "Hyprland configuration linked (host role: $HOST_ROLE)"
@@ -385,12 +390,15 @@ setup_waybar() {
 
   create_symlink "$DOTFILES_DIR/waybar/.config/waybar" "$HOME/.config/waybar"
 
-  # Per-host configs: relative symlinks inside the repo dir (gitignored)
+  # Per-host config: one relative symlink inside the repo dir (gitignored).
+  # config.jsonc and style.css are shared tracked files now — drop the
+  # symlinks left behind by the pre-2026-08-30 layout so they don't shadow.
   local waybar_dir="$DOTFILES_DIR/waybar/.config/waybar"
   local f
   for f in config.jsonc style.css; do
-    ln -sfn "hosts/$HOST_ROLE/$f" "$waybar_dir/$f"
+    [[ -L "$waybar_dir/$f" ]] && rm "$waybar_dir/$f"
   done
+  ln -sfn "hosts/$HOST_ROLE/host.jsonc" "$waybar_dir/host.jsonc"
   log "Waybar configuration linked (host role: $HOST_ROLE)"
 }
 
@@ -936,15 +944,21 @@ doctor() {
 
   log_step "Doctor: per-host links (role: $HOST_ROLE)"
   local f
-  for f in host.conf hypridle.conf hyprlock.conf hyprpaper.conf; do
+  for f in host.conf hypridle.conf; do
     if [[ "$(readlink "$DOTFILES_DIR/hypr/.config/hypr/$f" 2>/dev/null)" != "hosts/$HOST_ROLE/$f" ]]; then
       log "WRONG/MISSING  hypr/$f should link to hosts/$HOST_ROLE/$f (run: ./bootstrap.sh links)"
       ok=false
     fi
   done
-  for f in config.jsonc style.css; do
-    if [[ "$(readlink "$DOTFILES_DIR/waybar/.config/waybar/$f" 2>/dev/null)" != "hosts/$HOST_ROLE/$f" ]]; then
-      log "WRONG/MISSING  waybar/$f should link to hosts/$HOST_ROLE/$f (run: ./bootstrap.sh links)"
+  if [[ "$(readlink "$DOTFILES_DIR/waybar/.config/waybar/host.jsonc" 2>/dev/null)" != "hosts/$HOST_ROLE/host.jsonc" ]]; then
+    log "WRONG/MISSING  waybar/host.jsonc should link to hosts/$HOST_ROLE/host.jsonc (run: ./bootstrap.sh links)"
+    ok=false
+  fi
+  # Leftovers from the pre-2026-08-30 layout shadow the shared tracked files
+  for f in hypr/.config/hypr/hyprlock.conf hypr/.config/hypr/hyprpaper.conf \
+    waybar/.config/waybar/config.jsonc waybar/.config/waybar/style.css; do
+    if [[ -L "$DOTFILES_DIR/$f" ]]; then
+      log "STALE LINK  $f shadows the shared tracked file (run: ./bootstrap.sh links)"
       ok=false
     fi
   done
