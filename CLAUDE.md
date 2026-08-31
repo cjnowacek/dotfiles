@@ -41,9 +41,11 @@ Two Linux machines share the repo: a **desktop** (dual Dell 4K on NVIDIA) and a
   `~/.config/hypr/host.conf`. `hosts/<role>/` holds `host.conf` (monitors, GPU
   env, wallpaper daemon, laptop brightness keys), plus per-host `hypridle.conf`,
   `hyprlock.conf`, and `hyprpaper.conf`.
-- `waybar/.config/waybar/hosts/<role>/` holds `config.jsonc` + `style.css`
-  (desktop bar has the dropbox module and output-pinned workspaces; laptop bar
-  has battery + window title). `scripts/` is shared.
+- `waybar/.config/waybar/hosts/<role>/` holds `config.jsonc` + `style.css`.
+  The two bars are deliberately near-identical (Catppuccin, same modules);
+  they differ only where hardware does — desktop adds the dropbox module and
+  output-pinned workspaces, laptop adds battery. Port style changes to both.
+  `scripts/` is shared.
 - `bootstrap.sh` detects the role by battery presence (`/sys/class/power_supply/BAT*`
   → laptop), overridable with `DOTFILES_HOST=desktop|laptop`, and creates
   **gitignored relative symlinks inside the repo** (e.g.

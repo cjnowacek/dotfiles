@@ -1,19 +1,36 @@
 {
     "layer": "top",
     "position": "top",
-    "height": 20,
+    "height": 34,
     "spacing": 8,
-    "margin-top": 8,
-    "margin-left": 12,
-    "margin-right": 12,
-    
+
     "modules-left": ["hyprland/workspaces", "hyprland/window"],
     "modules-center": ["clock"],
-    "modules-right": ["pulseaudio", "network", "cpu", "memory", "battery", "tray"],
+    "modules-right": ["tray", "pulseaudio", "network", "cpu", "memory", "battery"],
 
     "hyprland/workspaces": {
-        "format": "{id}",
-        "on-click": "activate"
+        "format": "{name}",
+        "on-click": "activate",
+        "on-scroll-up": "hyprctl dispatch workspace m-1",
+        "on-scroll-down": "hyprctl dispatch workspace m+1"
+    },
+
+    "clock": {
+        "format": "{:%a %b %d  %I:%M %p}",
+        "format-alt": "{:%A, %B %d, %Y  %I:%M:%S %p}",
+        "tooltip-format": "<tt><small>{calendar}</small></tt>",
+        "calendar": {
+            "mode": "month",
+            "mode-mon-col": 3,
+            "weeks-pos": "right",
+            "on-scroll": 1,
+            "format": {
+                "months": "<span color='#89b4fa'><b>{}</b></span>",
+                "weekdays": "<span color='#f9e2af'><b>{}</b></span>",
+                "weeks": "<span color='#6c7086'>W{}</span>",
+                "today": "<span color='#89b4fa' background='#313244'><b><u>{}</u></b></span>"
+            }
+        }
     },
 
     "hyprland/window": {
@@ -37,24 +54,42 @@
         }
     },
 
-    "clock": {
-        "interval": 60,
-        "format": "{:%H:%M}",
-        "format-alt": "{:%A, %B %d, %Y}",
-        "tooltip-format": "<tt><small>{calendar}</small></tt>",
-        "calendar": {
-            "mode": "month",
-            "mode-mon-col": 3,
-            "weeks-pos": "right",
-            "on-scroll": 1,
-            "format": {
-                "months": "<span color='#d4af37'><b>{}</b></span>",
-                "days": "<span color='#c0c0c0'><b>{}</b></span>",
-                "weeks": "<span color='#9370db'><b>W{}</b></span>",
-                "weekdays": "<span color='#d4af37'><b>{}</b></span>",
-                "today": "<span color='#d4af37' background='#1a1a2e'><b><u>{}</u></b></span>"
-            }
-        }
+    "pulseaudio": {
+        "format": "{icon}  {volume}%",
+        "format-muted": "  muted",
+        "format-icons": {
+            "headphone": "",
+            "hands-free": "",
+            "headset": "",
+            "phone": "",
+            "portable": "",
+            "car": "",
+            "default": ["", "", ""]
+        },
+        "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+        "on-click-right": "pavucontrol",
+        "scroll-step": 5
+    },
+
+    "network": {
+        "interval": 2,
+        "format-ethernet": "  {ipaddr}  ↓{bandwidthDownBits} ↑{bandwidthUpBits}",
+        "format-wifi": "  {signalStrength}%",
+        "format-disconnected": "  disconnected",
+        "tooltip-format": "{ifname}: {ipaddr}/{cidr}\n{bandwidthUpBits} up / {bandwidthDownBits} down"
+    },
+
+    "cpu": {
+        "format": "  {usage}%",
+        "interval": 1,
+        "on-click": "kitty -e btop"
+    },
+
+    "memory": {
+        "format": "  {percentage}%",
+        "interval": 2,
+        "on-click": "kitty -e btop",
+        "tooltip-format": "{used:0.1f}G / {total:0.1f}G"
     },
 
     "battery": {
@@ -68,43 +103,8 @@
         "format-icons": ["", "", "", "", ""]
     },
 
-    "network": {
-        "format-wifi": "  {essid}",
-        "format-ethernet": " {ipaddr}",
-        "format-disconnected": "󰤮 Disconnected",
-        "tooltip-format": "{ifname}: {ipaddr}/{cidr}\n {bandwidthDownBits}  {bandwidthUpBits}",
-        "on-click": "nm-connection-editor"
-    },
-
-    "pulseaudio": {
-        "format": "{icon} {volume}%",
-        "format-muted": " Muted",
-        "format-icons": {
-            "headphone": "",
-            "hands-free": "",
-            "headset": "",
-            "phone": "",
-            "portable": "",
-            "car": "",
-            "default": ["", "", ""]
-        },
-        "on-click": "pavucontrol"
-    },
-
-    "cpu": {
-        "interval": 5,
-        "format": " {usage}%",
-        "max-length": 10
-    },
-
-    "memory": {
-        "interval": 5,
-        "format": " {percentage}%",
-        "max-length": 10
-    },
-
     "tray": {
-        "icon-size": 18,
-        "spacing": 10
+        "icon-size": 16,
+        "spacing": 8
     }
 }
