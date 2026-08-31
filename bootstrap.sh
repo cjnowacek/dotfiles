@@ -912,8 +912,11 @@ doctor() {
   log_step "Doctor: tools the configs invoke"
   local missing=()
   local cmd
-  for cmd in waybar hypridle hyprlock dunst cliphist wofi grim slurp swappy \
-    playerctl brightnessctl wl-copy kitty yazi btop nvim zsh; do
+  local doctor_tools=(waybar hypridle hyprlock dunst cliphist wofi grim slurp \
+    swappy playerctl wl-copy kitty yazi btop nvim zsh)
+  # brightnessctl is only bound in the laptop host.conf
+  [[ "$HOST_ROLE" == "laptop" ]] && doctor_tools+=(brightnessctl)
+  for cmd in "${doctor_tools[@]}"; do
     command -v "$cmd" &>/dev/null || missing+=("$cmd")
   done
   if ((${#missing[@]})); then
