@@ -223,6 +223,7 @@ Install-Pkg 'git'  'Git.Git'                  'plugin fetching, and a real Bash 
 Install-Pkg 'rg'   'BurntSushi.ripgrep.MSVC'  'Telescope live_grep'
 Install-Pkg 'fd'   'sharkdp.fd'               'Telescope find_files'
 Install-Pkg 'eza'  'eza-community.eza'        'ls aliases in the profile'
+Install-Pkg 'yazi' 'sxyazi.yazi'              'file manager, same y muscle memory as Linux'
 # nvim-treesitter compiles parsers and needs a real C compiler. Its `main`
 # branch probes for cc/gcc specifically, so zig does NOT satisfy the check even
 # though it can compile C. WinLibs is the gcc build treesitter itself suggests,

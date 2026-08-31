@@ -22,6 +22,16 @@ function v   { nvim @args }
 function n   { nvim @args }
 Set-Alias -Name vim -Value nvim -Option AllScope
 
+# --- File manager (yazi) ---------------------------------------------------
+# On exit, cd to yazi's last directory (the upstream-recommended wrapper).
+function y {
+    $tmp = [System.IO.Path]::GetTempFileName()
+    yazi @args --cwd-file="$tmp"
+    $cwd = Get-Content -Path $tmp -ErrorAction SilentlyContinue
+    if ($cwd -and $cwd -ne $PWD.Path) { Set-Location -LiteralPath $cwd }
+    Remove-Item -Path $tmp -ErrorAction SilentlyContinue
+}
+
 # --- Python ----------------------------------------------------------------
 function p { python @args }
 
