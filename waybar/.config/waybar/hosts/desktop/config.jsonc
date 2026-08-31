@@ -78,7 +78,7 @@
     "network": {
         "interval": 2,
         "format-ethernet": "  {ipaddr}  ↓{bandwidthDownBits} ↑{bandwidthUpBits}",
-        "format-wifi": "  {signalStrength}%",
+        "format-wifi": "  {signalStrength}%  ↓{bandwidthDownBits} ↑{bandwidthUpBits}",
         "format-disconnected": "  disconnected",
         "tooltip-format": "{ifname}: {ipaddr}/{cidr}\n{bandwidthUpBits} up / {bandwidthDownBits} down"
     },

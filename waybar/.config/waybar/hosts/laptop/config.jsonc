@@ -6,7 +6,7 @@
 
     "modules-left": ["hyprland/workspaces", "hyprland/window"],
     "modules-center": ["clock"],
-    "modules-right": ["tray", "pulseaudio", "network", "cpu", "memory", "battery"],
+    "modules-right": ["custom/dropbox", "tray", "pulseaudio", "network", "cpu", "memory", "battery"],
 
     "hyprland/workspaces": {
         "format": "{name}",
@@ -74,7 +74,7 @@
     "network": {
         "interval": 2,
         "format-ethernet": "  {ipaddr}  ↓{bandwidthDownBits} ↑{bandwidthUpBits}",
-        "format-wifi": "  {signalStrength}%",
+        "format-wifi": "  {signalStrength}%  ↓{bandwidthDownBits} ↑{bandwidthUpBits}",
         "format-disconnected": "  disconnected",
         "tooltip-format": "{ifname}: {ipaddr}/{cidr}\n{bandwidthUpBits} up / {bandwidthDownBits} down"
     },
@@ -90,6 +90,14 @@
         "interval": 2,
         "on-click": "kitty -e btop",
         "tooltip-format": "{used:0.1f}G / {total:0.1f}G"
+    },
+
+    "custom/dropbox": {
+        "exec": "~/.config/waybar/scripts/dropbox-status.sh",
+        "return-type": "json",
+        "interval": 10,
+        "on-click": "kitty -e yazi ~/Dropbox",
+        "on-click-right": "systemctl --user restart rclone-dropbox.service"
     },
 
     "battery": {

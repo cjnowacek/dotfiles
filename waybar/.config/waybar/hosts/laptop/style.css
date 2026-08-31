@@ -50,6 +50,7 @@ tooltip label {
 #cpu,
 #memory,
 #battery,
+#custom-dropbox,
 #tray {
     padding: 0 12px;
     border-radius: 4px;
@@ -59,8 +60,17 @@ tooltip label {
 /* hover feedback on the clickable modules */
 #pulseaudio:hover,
 #cpu:hover,
-#memory:hover {
+#memory:hover,
+#custom-dropbox:hover {
     background: rgba(137, 180, 250, 0.12);
+}
+
+#custom-dropbox {
+    color: #89b4fa;
+}
+
+#custom-dropbox.unmounted {
+    color: #f38ba8;
 }
 
 #battery {

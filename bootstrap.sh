@@ -157,7 +157,7 @@ install_dependencies() {
         waybar hypridle hyprlock hyprpaper hyprsunset \
         dunst cliphist wl-clipboard wofi \
         grim slurp swappy playerctl brightnessctl \
-        pavucontrol kitty yazi btop \
+        pavucontrol kitty yazi btop rclone fuse3 \
         ttf-jetbrains-mono-nerd
     fi
 
@@ -855,6 +855,46 @@ final_steps() {
   log "  3. Check SSH agent status: systemctl --user status ssh-agent"
 }
 
+# rclone Dropbox mount (the waybar dropbox module reads this service's state)
+setup_rclone_dropbox() {
+  log_step "Setting up rclone Dropbox mount service"
+
+  if ! command -v rclone &>/dev/null; then
+    log "Skipping rclone-dropbox (rclone not installed)"
+    return
+  fi
+
+  mkdir -p "$HOME/.config/systemd/user"
+  cat > "$HOME/.config/systemd/user/rclone-dropbox.service" << 'EOF'
+[Unit]
+Description=rclone Dropbox mount (on-demand VFS)
+After=network-online.target
+
+[Service]
+Type=notify
+ExecStart=/usr/bin/rclone mount dropbox: %h/Dropbox --vfs-cache-mode writes
+ExecStop=/usr/bin/fusermount -u %h/Dropbox
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target
+EOF
+  systemctl --user daemon-reload
+
+  # Only start it when the remote actually exists — auth is a manual, per-
+  # machine step (`rclone config`, or copy ~/.config/rclone/rclone.conf from
+  # a machine that has it; the token is a secret and stays out of this repo).
+  if rclone listremotes 2>/dev/null | grep -qx "dropbox:"; then
+    mkdir -p "$HOME/Dropbox"
+    systemctl --user enable --now rclone-dropbox.service 2>/dev/null || true
+    log "rclone-dropbox service enabled"
+  else
+    log "rclone remote 'dropbox:' not configured — service installed but not enabled"
+    log "  (run: rclone config   or copy ~/.config/rclone/rclone.conf from the desktop)"
+  fi
+}
+
 # Main installation flow
 # Read-only health check: reports drift without changing anything.
 doctor() {
@@ -1011,6 +1051,7 @@ main() {
   setup_obsidian
   setup_python
   setup_ssh_agent
+  setup_rclone_dropbox
   change_shell
   final_steps
 }
