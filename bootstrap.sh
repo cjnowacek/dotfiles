@@ -157,7 +157,7 @@ install_dependencies() {
         waybar hypridle hyprlock hyprpaper hyprsunset \
         dunst cliphist wl-clipboard wofi \
         grim slurp swappy playerctl brightnessctl \
-        thunar pavucontrol kitty yazi btop \
+        pavucontrol kitty yazi btop \
         ttf-jetbrains-mono-nerd
     fi
 

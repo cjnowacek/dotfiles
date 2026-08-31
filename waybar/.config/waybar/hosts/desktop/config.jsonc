@@ -100,7 +100,7 @@
         "exec": "~/.config/waybar/scripts/dropbox-status.sh",
         "return-type": "json",
         "interval": 10,
-        "on-click": "thunar ~/Dropbox",
+        "on-click": "kitty -e yazi ~/Dropbox",
         "on-click-right": "systemctl --user restart rclone-dropbox.service"
     },
 
