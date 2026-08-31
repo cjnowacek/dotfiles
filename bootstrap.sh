@@ -157,7 +157,7 @@ install_dependencies() {
         waybar hypridle hyprlock hyprpaper hyprsunset \
         dunst cliphist wl-clipboard wofi \
         grim slurp swappy playerctl brightnessctl \
-        thunar pavucontrol kitty \
+        thunar pavucontrol kitty yazi btop \
         ttf-jetbrains-mono-nerd
     fi
 
@@ -913,7 +913,7 @@ doctor() {
   local missing=()
   local cmd
   for cmd in waybar hypridle hyprlock dunst cliphist wofi grim slurp swappy \
-    playerctl brightnessctl wl-copy kitty nvim zsh; do
+    playerctl brightnessctl wl-copy kitty yazi btop nvim zsh; do
     command -v "$cmd" &>/dev/null || missing+=("$cmd")
   done
   if ((${#missing[@]})); then
