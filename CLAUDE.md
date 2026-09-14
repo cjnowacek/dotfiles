@@ -16,6 +16,8 @@ dotfiles/
 ├── nvim/.config/nvim/    → ~/.config/nvim
 ├── hypr/.config/hypr/    → ~/.config/hypr      (shared + hosts/, see below)
 ├── waybar/.config/waybar/ → ~/.config/waybar   (hosts/ only, see below)
+├── wofi/.config/wofi/    → ~/.config/wofi
+├── applications/.local/share/applications/*.desktop → ~/.local/share/applications/  (linked per file)
 ├── obsidian/.obsidian/   → <vault>/.obsidian   (each vault; both OSes)
 ├── unix/.unix_aliases    (sourced by both .bashrc and .zshrc)
 ├── bootstrap.sh          (full system setup script)
@@ -60,7 +62,7 @@ only what hardware dictates. Per-host files are down to three:
   **gitignored relative symlinks inside the repo** (e.g.
   `hypr/.config/hypr/host.conf → hosts/laptop/host.conf`). After a pull that
   changes the hosts layout, run `./bootstrap.sh links` — it redoes only the
-  symlinks (shell, nvim, hypr, waybar) and skips all installs.
+  symlinks (shell, nvim, hypr, waybar, wofi) and skips all installs.
 
 **Pulling the 2026-08-30 shared-file consolidation over the older hosts/
 layout:** the pull creates tracked `waybar/config.jsonc`, `waybar/style.css`,
@@ -104,6 +106,11 @@ Two more gotchas:
   snacks.nvim, which LazyVim already ships. Run it from the nvim terminal split or PowerShell,
   not raw Git Bash (no TTY, so the interactive CLI errors with "Raw mode is not supported")
 - Shell aliases live in `unix/.unix_aliases`, not in the rc files directly
+- `applications/` holds `.desktop` overrides, linked **per file** into `~/.local/share/applications/`
+  (that dir also has untracked Steam/Chrome entries). `yazi.desktop` exists because the stock entry
+  has `Terminal=true` and wofi's terminal autodetection silently fails on it, so selecting Yazi in
+  drun did nothing; the override runs `kitty -e yazi` with `Terminal=false`. `wofi/config` also
+  sets `term=kitty` for any other terminal apps.
 - `setup_obsidian()` links `obsidian/.obsidian` into each vault. Defaults to `~/dev/zettelpara`
   and `~/dev/ai-chats`; override with `VAULTS="/path/a /path/b" ./bootstrap.sh`. Vaults that
   don't exist are skipped with a log line, so a stale path fails silently — keep this list and

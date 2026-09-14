@@ -402,6 +402,27 @@ setup_waybar() {
   log "Waybar configuration linked (host role: $HOST_ROLE)"
 }
 
+# Setup wofi (app launcher) and per-app .desktop overrides
+setup_wofi() {
+  log_step "Setting up wofi configuration"
+
+  create_symlink "$DOTFILES_DIR/wofi/.config/wofi" "$HOME/.config/wofi"
+
+  # Stock yazi.desktop has Terminal=true, and wofi's terminal autodetection
+  # silently fails on it (selecting Yazi does nothing). The override runs
+  # `kitty -e yazi` directly. Linked per file, not per dir: the target dir
+  # also holds Steam/Chrome-generated entries that must stay untracked.
+  local apps_src="$DOTFILES_DIR/applications/.local/share/applications"
+  local apps_dst="$HOME/.local/share/applications"
+  local f
+  for f in "$apps_src"/*.desktop; do
+    create_symlink "$f" "$apps_dst/$(basename "$f")"
+  done
+  command -v update-desktop-database >/dev/null && update-desktop-database "$apps_dst" 2>/dev/null
+  rm -f "$HOME/.cache/wofi-drun"
+  log "wofi configuration and desktop overrides linked"
+}
+
 # Setup Obsidian configuration
 setup_obsidian() {
   log_step "Setting up Obsidian configuration"
@@ -912,7 +933,8 @@ doctor() {
   log_step "Doctor: symlink health"
   local link target
   for link in "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.zprofile" \
-    "$HOME/.config/nvim" "$HOME/.config/hypr" "$HOME/.config/waybar"; do
+    "$HOME/.config/nvim" "$HOME/.config/hypr" "$HOME/.config/waybar" \
+    "$HOME/.config/wofi" "$HOME/.local/share/applications/yazi.desktop"; do
     if [[ ! -e "$link" && ! -L "$link" ]]; then
       log "MISSING  $link (run: ./bootstrap.sh links)"
       ok=false
@@ -1042,6 +1064,7 @@ main() {
     setup_neovim
     setup_hyprland
     setup_waybar
+    setup_wofi
     return
   fi
 
@@ -1063,6 +1086,7 @@ main() {
   setup_neovim
   setup_hyprland
   setup_waybar
+  setup_wofi
   setup_obsidian
   setup_python
   setup_ssh_agent
