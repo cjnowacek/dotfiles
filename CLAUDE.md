@@ -92,6 +92,14 @@ Two more gotchas:
   **Lua** config (`hyprland.lua`) instead of erroring, and that session ignores
   `hyprland.conf` until a full relogin — `hyprctl systeminfo | grep configProvider`
   should say `hyprlang`, not `lua`. `hyprctl reload` cannot switch providers.
+- **Pause Hyprland's auto-reload before any git operation that rewrites
+  `hyprland.conf`** (pull, rebase, checkout, stash):
+  `hyprctl keyword misc:disable_autoreload true`, then `hyprctl reload` once
+  the tree is settled (the reload also turns auto-reload back on). Git deletes
+  and recreates a file it rewrites; a running Hyprland that notices the moment
+  it is missing writes its "This config is a STUB!" file over it, and the
+  rebase then stops on that as a local change. Seen 2026-09-16 on the desktop:
+  restore with `git checkout -- hypr/.config/hypr/hyprland.conf`.
 
 ## Key details
 
