@@ -18,6 +18,7 @@ dotfiles/
 ├── waybar/.config/waybar/ → ~/.config/waybar   (hosts/ only, see below)
 ├── wofi/.config/wofi/    → ~/.config/wofi
 ├── kitty/.config/kitty/  → ~/.config/kitty
+├── dunst/.config/dunst/  → ~/.config/dunst
 ├── applications/.local/share/applications/*.desktop → ~/.local/share/applications/  (linked per file)
 ├── obsidian/.obsidian/   → <vault>/.obsidian   (each vault; both OSes)
 ├── unix/.unix_aliases    (sourced by both .bashrc and .zshrc)
@@ -63,7 +64,7 @@ only what hardware dictates. Per-host files are down to three:
   **gitignored relative symlinks inside the repo** (e.g.
   `hypr/.config/hypr/host.conf → hosts/laptop/host.conf`). After a pull that
   changes the hosts layout, run `./bootstrap.sh links` — it redoes only the
-  symlinks (shell, nvim, hypr, waybar, wofi, kitty) and skips all installs.
+  symlinks (shell, nvim, hypr, waybar, wofi, kitty, dunst) and skips all installs.
 
 **Pulling the 2026-08-30 shared-file consolidation over the older hosts/
 layout:** the pull creates tracked `waybar/config.jsonc`, `waybar/style.css`,

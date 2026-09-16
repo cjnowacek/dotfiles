@@ -430,6 +430,14 @@ setup_kitty() {
   log "kitty configuration linked"
 }
 
+# Setup dunst (notifications)
+setup_dunst() {
+  log_step "Setting up dunst configuration"
+  create_symlink "$DOTFILES_DIR/dunst/.config/dunst" "$HOME/.config/dunst"
+  command -v dunstctl >/dev/null && dunstctl reload 2>/dev/null
+  log "dunst configuration linked"
+}
+
 # Setup Obsidian configuration
 setup_obsidian() {
   log_step "Setting up Obsidian configuration"
@@ -941,7 +949,7 @@ doctor() {
   local link target
   for link in "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.zprofile" \
     "$HOME/.config/nvim" "$HOME/.config/hypr" "$HOME/.config/waybar" \
-    "$HOME/.config/wofi" "$HOME/.config/kitty" "$HOME/.local/share/applications/yazi.desktop"; do
+    "$HOME/.config/wofi" "$HOME/.config/kitty" "$HOME/.config/dunst" "$HOME/.local/share/applications/yazi.desktop"; do
     if [[ ! -e "$link" && ! -L "$link" ]]; then
       log "MISSING  $link (run: ./bootstrap.sh links)"
       ok=false
@@ -1073,6 +1081,7 @@ main() {
     setup_waybar
     setup_wofi
     setup_kitty
+    setup_dunst
     return
   fi
 
@@ -1096,6 +1105,7 @@ main() {
   setup_waybar
   setup_wofi
   setup_kitty
+  setup_dunst
   setup_obsidian
   setup_python
   setup_ssh_agent

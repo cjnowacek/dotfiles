@@ -1,7 +1,8 @@
+/* Flexoki, tuned as in Cairn and waybar: paper on #1c1b1a, one blue accent. Opaque. */
 window {
     margin: 0;
-    background-color: rgba(30, 30, 46, 0.95);
-    border: 2px solid #45475a;
+    background-color: #1c1b1a;
+    border: 2px solid #403e3c;
     border-radius: 12px;
     font-family: "JetBrainsMono Nerd Font";
     font-size: 14px;
@@ -11,15 +12,15 @@ window {
     margin: 8px;
     padding: 8px 12px;
     border: none;
-    border-bottom: 2px solid #45475a;
+    border-bottom: 2px solid #403e3c;
     border-radius: 8px;
-    background-color: #313244;
-    color: #cdd6f4;
+    background-color: #282726;
+    color: #cecdc3;
     font-size: 14px;
 }
 
 #input:focus {
-    border-bottom-color: #89b4fa;
+    border-bottom-color: #66a0c8;
 }
 
 #inner-box {
@@ -34,7 +35,7 @@ window {
 #text {
     margin: 0;
     padding: 4px 8px;
-    color: #cdd6f4;
+    color: #cecdc3;
 }
 
 #entry {
@@ -43,9 +44,9 @@ window {
 }
 
 #entry:selected {
-    background-color: rgba(137, 180, 250, 0.15);
+    background-color: rgba(102, 160, 200, 0.15);
 }
 
 #entry:selected #text {
-    color: #89b4fa;
+    color: #66a0c8;
 }
