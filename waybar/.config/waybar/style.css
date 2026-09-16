@@ -1,3 +1,6 @@
+/* Flexoki (stephango.com/flexoki), tuned the way Cairn uses it: paper text on
+   its near-black, one blue accent, teal for healthy and red for trouble.
+   Every text colour here is 4.6:1 or more on the bar. Opaque, like the windows. */
 * {
     font-family: "JetBrainsMono Nerd Font Mono", "Font Awesome 7 Free Solid";
     font-size: 13px;
@@ -5,24 +8,24 @@
 }
 
 window#waybar {
-    background: rgba(30, 30, 46, 0.9);
-    color: #cdd6f4;
-    border-bottom: 2px solid rgba(137, 180, 250, 0.3);
+    background: #1c1b1a;
+    color: #cecdc3;
+    border-bottom: 2px solid rgba(102, 160, 200, 0.25);
 }
 
 tooltip {
-    background: #1e1e2e;
-    border: 1px solid #45475a;
+    background: #1c1b1a;
+    border: 1px solid #403e3c;
     border-radius: 8px;
 }
 
 tooltip label {
-    color: #cdd6f4;
+    color: #cecdc3;
 }
 
 #workspaces button {
     padding: 0 6px;
-    color: #6c7086;
+    color: #878580;
     background: transparent;
     border: none;
     border-radius: 4px;
@@ -31,17 +34,17 @@ tooltip label {
 }
 
 #workspaces button.active {
-    color: #89b4fa;
-    background: rgba(137, 180, 250, 0.15);
+    color: #66a0c8;
+    background: rgba(102, 160, 200, 0.15);
 }
 
 #workspaces button:hover {
-    background: rgba(137, 180, 250, 0.1);
+    background: rgba(102, 160, 200, 0.1);
 }
 
 #window {
     padding: 0 12px;
-    color: #b4befe;
+    color: #cecdc3;
 }
 
 #clock,
@@ -62,60 +65,60 @@ tooltip label {
 #cpu:hover,
 #memory:hover,
 #custom-dropbox:hover {
-    background: rgba(137, 180, 250, 0.12);
+    background: rgba(102, 160, 200, 0.12);
 }
 
 #custom-dropbox {
-    color: #89b4fa;
+    color: #66a0c8;
 }
 
 #custom-dropbox.unmounted {
-    color: #f38ba8;
+    color: #e8705f;
 }
 
 #battery {
-    color: #a6e3a1;
+    color: #5abdac;
 }
 
 #battery.charging {
-    color: #94e2d5;
+    color: #66a0c8;
 }
 
 #battery.warning {
-    color: #fab387;
+    color: #da702c;
 }
 
 #battery.critical {
-    color: #f38ba8;
+    color: #e8705f;
 }
 
 #clock {
-    color: #89b4fa;
+    color: #66a0c8;
     font-weight: bold;
 }
 
 #pulseaudio {
-    color: #f9e2af;
+    color: #eccb60;
 }
 
 #pulseaudio.muted {
-    color: #6c7086;
+    color: #878580;
 }
 
 #network {
-    color: #a6e3a1;
+    color: #5abdac;
 }
 
 #network.disconnected {
-    color: #f38ba8;
+    color: #e8705f;
 }
 
 #cpu {
-    color: #fab387;
+    color: #da702c;
 }
 
 #memory {
-    color: #cba6f7;
+    color: #e47da8;
 }
 
 #tray > .passive {
