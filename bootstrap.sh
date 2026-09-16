@@ -423,6 +423,13 @@ setup_wofi() {
   log "wofi configuration and desktop overrides linked"
 }
 
+# Setup kitty (the terminal Hyprland binds and wofi launches)
+setup_kitty() {
+  log_step "Setting up kitty configuration"
+  create_symlink "$DOTFILES_DIR/kitty/.config/kitty" "$HOME/.config/kitty"
+  log "kitty configuration linked"
+}
+
 # Setup Obsidian configuration
 setup_obsidian() {
   log_step "Setting up Obsidian configuration"
@@ -934,7 +941,7 @@ doctor() {
   local link target
   for link in "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.zprofile" \
     "$HOME/.config/nvim" "$HOME/.config/hypr" "$HOME/.config/waybar" \
-    "$HOME/.config/wofi" "$HOME/.local/share/applications/yazi.desktop"; do
+    "$HOME/.config/wofi" "$HOME/.config/kitty" "$HOME/.local/share/applications/yazi.desktop"; do
     if [[ ! -e "$link" && ! -L "$link" ]]; then
       log "MISSING  $link (run: ./bootstrap.sh links)"
       ok=false
@@ -1065,6 +1072,7 @@ main() {
     setup_hyprland
     setup_waybar
     setup_wofi
+    setup_kitty
     return
   fi
 
@@ -1087,6 +1095,7 @@ main() {
   setup_hyprland
   setup_waybar
   setup_wofi
+  setup_kitty
   setup_obsidian
   setup_python
   setup_ssh_agent
