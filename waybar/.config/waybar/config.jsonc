@@ -25,10 +25,10 @@
             "weeks-pos": "right",
             "on-scroll": 1,
             "format": {
-                "months": "<span color='#89b4fa'><b>{}</b></span>",
-                "weekdays": "<span color='#f9e2af'><b>{}</b></span>",
-                "weeks": "<span color='#6c7086'>W{}</span>",
-                "today": "<span color='#89b4fa' background='#313244'><b><u>{}</u></b></span>"
+                "months": "<span color='#66a0c8'><b>{}</b></span>",
+                "weekdays": "<span color='#eccb60'><b>{}</b></span>",
+                "weeks": "<span color='#878580'>W{}</span>",
+                "today": "<span color='#100f0f' background='#66a0c8'><b><u>{}</u></b></span>"
             }
         }
     },
@@ -38,15 +38,18 @@
         "max-length": 50,
         "separate-outputs": true,
         "rewrite": {
-            "kitty": " Kitty",
-            "firefox": " Firefox",
-            "chromium": " Chromium",
+            "kitty": "\uf120 Kitty",
+            "firefox": "\uf269 Firefox",
+            "chromium": "\uf268 Chromium",
+            "google-chrome": "\uf268 Chrome",
             "discord": "󰙯 Discord",
             "vesktop": "󰙯 Vesktop",
-            "spotify": " Spotify",
+            "spotify": "\uf1bc Spotify",
             "code": "󰨞 Code",
-            "thunar": " Files",
-            "steam": " Steam",
+            "thunar": "\uf07b Files",
+            "steam": "\uf1b6 Steam",
+            "com.moonlight_stream.Moonlight": "\udb82\udcb9 Moonlight",
+            "teams-for-linux": "\udb80\udebb Teams",
             "obsidian": "󱓧 Obsidian",
             "unity": "󰛓 Unity",
             "blender": "󰂫 Blender",
@@ -56,15 +59,15 @@
 
     "pulseaudio": {
         "format": "{icon}  {volume}%",
-        "format-muted": "  muted",
+        "format-muted": "\udb81\udd81  muted",
         "format-icons": {
-            "headphone": "",
-            "hands-free": "",
-            "headset": "",
-            "phone": "",
-            "portable": "",
-            "car": "",
-            "default": ["", "", ""]
+            "headphone": "\uf025",
+            "hands-free": "\uf025",
+            "headset": "\uf025",
+            "phone": "\uf095",
+            "portable": "\uf095",
+            "car": "\uf1b9",
+            "default": ["\uf026", "\uf027", "\uf028"]
         },
         "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
         "on-click-right": "pavucontrol",
@@ -73,20 +76,20 @@
 
     "network": {
         "interval": 2,
-        "format-ethernet": "  {ipaddr}  ↓{bandwidthDownBits} ↑{bandwidthUpBits}",
-        "format-wifi": "  {signalStrength}%  ↓{bandwidthDownBits} ↑{bandwidthUpBits}",
-        "format-disconnected": "  disconnected",
+        "format-ethernet": "\udb80\ude00  {ipaddr}  ↓{bandwidthDownBits} ↑{bandwidthUpBits}",
+        "format-wifi": "\uf1eb  {signalStrength}%  ↓{bandwidthDownBits} ↑{bandwidthUpBits}",
+        "format-disconnected": "\udb83\udc9b  disconnected",
         "tooltip-format": "{ifname}: {ipaddr}/{cidr}\n{bandwidthUpBits} up / {bandwidthDownBits} down"
     },
 
     "cpu": {
-        "format": "  {usage}%",
+        "format": "\uf4bc  {usage}%",
         "interval": 1,
         "on-click": "kitty -e btop"
     },
 
     "memory": {
-        "format": "  {percentage}%",
+        "format": "\udb80\udf5b  {percentage}%",
         "interval": 2,
         "on-click": "kitty -e btop",
         "tooltip-format": "{used:0.1f}G / {total:0.1f}G"
@@ -106,9 +109,9 @@
             "critical": 15
         },
         "format": "{icon} {capacity}%",
-        "format-charging": " {capacity}%",
-        "format-plugged": " {capacity}%",
-        "format-icons": ["", "", "", "", ""]
+        "format-charging": "\udb80\udc84 {capacity}%",
+        "format-plugged": "\uf1e6 {capacity}%",
+        "format-icons": ["\uf244", "\uf243", "\uf242", "\uf241", "\uf240"]
     },
 
     "tray": {

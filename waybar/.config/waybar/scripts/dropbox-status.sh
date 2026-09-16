@@ -2,8 +2,10 @@
 # Waybar custom module: rclone Dropbox mount status
 # Outputs JSON: {text, tooltip, class}
 MNT="$HOME/Dropbox"
-ICON_OK="Dropbox"        # font lacks Nerd Font glyphs; plain label is reliable
-ICON_BAD="Dropbox down"
+# The icon travels as a JSON \u escape (Nerd Font dropbox, U+F01E5), which
+# waybar decodes: a raw glyph in this file is what editors strip.
+ICON_OK='\udb80\udde5  Dropbox'
+ICON_BAD='\udb80\udde5  Dropbox down'
 
 if mountpoint -q "$MNT" && systemctl --user is-active --quiet rclone-dropbox.service; then
     cache=$(du -sh "$HOME/.cache/rclone/vfs" 2>/dev/null | cut -f1)
