@@ -22,6 +22,7 @@ dotfiles/
 ├── gtk/.config/gtk-{3,4}.0/*  → ~/.config/gtk-{3,4}.0/  (linked per file; bookmarks stays real)
 ├── gtk/.local/share/themes/Flexoki/ → ~/.local/share/themes/Flexoki  (GTK3 theme, GNOME host)
 ├── gnome/apply.sh        (gsettings skin for the GNOME host; run by setup_gnome)
+├── maya/scripts/userSetup.py → ~/maya/<ver>/scripts/userSetup.py  (starts the maya-mcp bridge, port 7777)
 ├── applications/.local/share/applications/*.desktop → ~/.local/share/applications/  (linked per file)
 ├── obsidian/.obsidian/   → <vault>/.obsidian   (each vault; both OSes)
 ├── unix/.unix_aliases    (sourced by both .bashrc and .zshrc)
@@ -224,6 +225,15 @@ old Mesa), and Maya targets GNOME anyway, so the VM keeps GNOME and gets
   the Maya window. Permanent fix if it keeps happening: log in with
   "GNOME on Xorg" instead (also removes the need for the X11 sign-in env in
   `~/.local/bin/maya`).
+- **maya-mcp** (`setup_mcp_maya`, any host with `/usr/autodesk/maya`):
+  clones CJ's `cjnowacek/maya-mcp` to `~/dev/maya-mcp`, builds `.venv`
+  from `mayapy` (EL9 has no python >= 3.11 otherwise), registers
+  `~/dev/maya-mcp/.venv/bin/maya-mcp` as MCP server `maya` in `~/.claude.json`,
+  and links `maya/scripts/userSetup.py` into `~/maya/<ver>/scripts/` so Maya
+  imports `maya_bridge` (127.0.0.1:7777) at start. A Maya already running
+  needs `exec(open("~/dev/maya-mcp/maya_bridge.py").read())` in its Script
+  Editor; Claude Code only sees the tools after a restart. Headless checks
+  (batch-open scenes, save placeholders) use `mayapy` directly instead.
 - Obsidian on dnf hosts: `pkg_install_obsidian` (dnf.sh) calls
   `install_obsidian_appimage`, which puts the newest release *with an x86_64
   AppImage* at `~/.local/bin/obsidian` (mobile-only tags have no assets).

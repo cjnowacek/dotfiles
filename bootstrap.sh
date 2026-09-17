@@ -676,6 +676,63 @@ setup_mcp_chat_logger() {
   log "MCP chat-logger configured (vault: $vault_path)"
 }
 
+# maya-mcp (cjnowacek/maya-mcp): MCP server that drives a running Maya via
+# the repo's in-Maya bridge (maya_bridge.py, 127.0.0.1:7777). Same shape as
+# chat-logger: repo in ~/dev, registered in ~/.claude.json. Server needs
+# Python >= 3.11; on EL9 the only one is Maya's mayapy (3.13), so the venv is
+# built from it. Skipped when Maya is absent.
+setup_mcp_maya() {
+  log_step "Setting up MCP maya"
+
+  local maya_bin="/usr/autodesk/maya/bin"
+  if [[ ! -x "$maya_bin/mayapy" ]]; then
+    log "Skipping maya-mcp (no Maya at /usr/autodesk/maya)"
+    return
+  fi
+
+  local repo_dir="$HOME/dev/maya-mcp"
+  if [ ! -d "$repo_dir/.git" ]; then
+    if ! can_access_repo git@github.com:cjnowacek/maya-mcp.git; then
+      log "Warning: no access to maya-mcp repo — skipping"
+      return
+    fi
+    git clone git@github.com:cjnowacek/maya-mcp.git "$repo_dir"
+  else
+    git -C "$repo_dir" pull --rebase --autostash
+  fi
+
+  # venv: python3 if >= 3.11, else mayapy.
+  local py="$maya_bin/mayapy"
+  if python3 -c 'import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)' 2>/dev/null; then
+    py=python3
+  fi
+  [[ -x "$repo_dir/.venv/bin/python" ]] || "$py" -m venv "$repo_dir/.venv"
+  "$repo_dir/.venv/bin/python" -m pip install --quiet --upgrade pip
+  "$repo_dir/.venv/bin/python" -m pip install --quiet -e "$repo_dir"
+
+  # Maya side: userSetup.py imports maya_bridge at startup (per-version dir).
+  local ver_dir
+  for ver_dir in "$HOME"/maya/20[0-9][0-9]; do
+    [[ -d "$ver_dir" ]] || continue
+    mkdir -p "$ver_dir/scripts"
+    ln -sfn "$DOTFILES_DIR/maya/scripts/userSetup.py" "$ver_dir/scripts/userSetup.py"
+    log "Maya $(basename "$ver_dir"): userSetup.py linked (starts the bridge)"
+  done
+
+  # Register with Claude Code (~/.claude.json, user scope).
+  node -e "
+    const fs = require('fs');
+    const [configPath, cmd] = process.argv.slice(1);
+    let config = {};
+    try { config = JSON.parse(fs.readFileSync(configPath, 'utf-8')); } catch {}
+    if (!config.mcpServers) config.mcpServers = {};
+    config.mcpServers['maya'] = { type: 'stdio', command: cmd, args: [] };
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n', 'utf-8');
+  " "$HOME/.claude.json" "$repo_dir/.venv/bin/maya-mcp"
+
+  log "MCP maya configured ($repo_dir/.venv/bin/maya-mcp; bridge starts with Maya)"
+}
+
 # Setup SSH agent as systemd service
 setup_ssh_agent() {
   log_step "Setting up SSH agent systemd service"
@@ -1125,6 +1182,7 @@ main() {
   install_rust
   install_nodejs
   setup_mcp_chat_logger
+  setup_mcp_maya
   setup_ai_chats
   setup_zettelpara_vault
   install_zk
