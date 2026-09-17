@@ -56,7 +56,21 @@ check_os() {
       log "Detected Debian/Ubuntu"
     elif command -v dnf &>/dev/null; then
       PKG_MANAGER="dnf"
-      log "Detected Fedora/RHEL"
+      # Rocky/Alma/CentOS/RHEL keep only slow-moving packages in base; the
+      # dev tools below (ripgrep, fd, fzf, pandoc) come from EPEL. Fedora
+      # ships them directly and has no EPEL.
+      local os_id="" os_like=""
+      if [[ -r /etc/os-release ]]; then
+        os_id=$(. /etc/os-release && echo "${ID:-}")
+        os_like=$(. /etc/os-release && echo "${ID_LIKE:-}")
+      fi
+      if [[ "$os_id" =~ ^(rocky|almalinux|centos|rhel)$ || "$os_like" == *rhel* ]]; then
+        IS_EL=true
+        log "Detected Enterprise Linux ($os_id) — will enable EPEL"
+      else
+        IS_EL=false
+        log "Detected Fedora"
+      fi
     else
       log_error "Unsupported package manager"
       exit 1
@@ -220,32 +234,32 @@ install_dependencies() {
   dnf)
     log "Using dnf"
 
-    if [[ "$IS_WSL" == true ]]; then
-      sudo dnf install -y \
-        git \
-        curl \
-        wget \
-        @development-tools \
-        ripgrep \
-        fd-find \
-        fzf \
-        eza \
-        pandoc \
-        zsh
-    else
-      sudo dnf install -y \
-        git \
-        curl \
-        wget \
-        @development-tools \
-        xclip \
-        ripgrep \
-        fd-find \
-        fzf \
-        eza \
-        pandoc \
-        zsh
+    if [[ "$IS_EL" == true ]]; then
+      log "Enabling EPEL and CRB repos"
+      sudo dnf install -y epel-release
+      # CRB (CodeReady Builder) holds build deps that EPEL packages pull in.
+      # Rocky/Alma ship a `crb` helper; fall back to config-manager on others.
+      if command -v crb &>/dev/null; then
+        sudo crb enable
+      else
+        sudo dnf install -y dnf-plugins-core
+        sudo dnf config-manager --set-enabled crb || sudo dnf config-manager --set-enabled powertools || true
+      fi
     fi
+
+    # "Development Tools" is the group name on both Fedora and EL; the
+    # @development-tools id only exists on Fedora.
+    # strict=0 turns an unavailable package into a warning instead of
+    # aborting the whole transaction (eza is not in EPEL 9 — see install_eza).
+    # file: install_neovim validates the AppImage with it.
+    # fuse-libs: the Neovim AppImage needs libfuse2 to run.
+    local -a dnf_pkgs=(
+      git curl wget file "@Development Tools"
+      ripgrep fd-find fzf eza pandoc zsh fuse-libs
+    )
+    # WSL doesn't need xclip (uses Windows clipboard)
+    [[ "$IS_WSL" != true ]] && dnf_pkgs+=(xclip)
+    sudo dnf install -y --setopt=strict=0 "${dnf_pkgs[@]}"
     ;;
   brew)
     if ! command -v brew &>/dev/null; then
@@ -258,6 +272,34 @@ install_dependencies() {
   esac
 
   log "Dependencies installed"
+}
+
+# eza is aliased in unix/.unix_aliases but is missing from EPEL 9, so on
+# distros where the package manager could not provide it, drop the upstream
+# static binary into /usr/local/bin.
+install_eza() {
+  if command -v eza &>/dev/null; then
+    return 0
+  fi
+  log_step "Installing eza from GitHub release"
+
+  local arch
+  arch=$(uname -m)
+  if [[ "$arch" != "x86_64" ]]; then
+    log_error "No eza release fallback for $arch — install it manually"
+    return 0
+  fi
+
+  local url="https://github.com/eza-community/eza/releases/latest/download/eza_x86_64-unknown-linux-gnu.tar.gz"
+  local tmp
+  tmp=$(mktemp -d)
+  if curl -fsSL "$url" | tar -xz -C "$tmp"; then
+    sudo install -m 0755 "$tmp/eza" /usr/local/bin/eza
+    log "eza installed: $(eza --version | head -n1)"
+  else
+    log_error "Failed to download eza — the z alias will be broken until it is installed"
+  fi
+  rm -rf "$tmp"
 }
 
 # Install Oh My Zsh
@@ -1088,6 +1130,7 @@ main() {
   # Run setup steps
   check_os
   install_dependencies
+  install_eza
   setup_bash_tools
   install_rust
   install_nodejs

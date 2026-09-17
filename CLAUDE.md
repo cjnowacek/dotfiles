@@ -126,6 +126,20 @@ Two more gotchas:
   don't exist are skipped with a log line, so a stale path fails silently — keep this list and
   the `-Vaults` default in `bootstrap.ps1` in sync when a vault moves.
 
+## Rocky / RHEL-family (dnf) half
+
+The `rocky-maya` libvirt VM (Rocky 9, GNOME) runs the same `bootstrap.sh`.
+`check_os` reads `/etc/os-release`: Rocky/Alma/CentOS/RHEL set `IS_EL=true`,
+which makes the dnf branch install `epel-release` and enable CRB before the
+package list (ripgrep, fd-find, fzf, pandoc live in EPEL, not base). The dnf
+install runs with `--setopt=strict=0` so a package missing from that distro's
+repos is a warning, not an abort. eza is not in EPEL 9, so `install_eza`
+drops the upstream x86_64 release binary into `/usr/local/bin` whenever the
+package manager did not provide it. Neovim comes from the AppImage
+(`fuse-libs` is in the dnf list for it). The Hyprland/waybar/wofi/dunst
+symlinks are still created under GNOME and simply sit unused. Clone over
+HTTPS in the VM (repo is public; no SSH key needed for read-only).
+
 ## Windows (cross-platform) half
 
 The repo is checked out on **both** OSes: WSL/Linux at `~/.dotfiles`, and a Windows
