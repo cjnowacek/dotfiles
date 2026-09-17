@@ -121,9 +121,10 @@ Two more gotchas:
   not raw Git Bash (no TTY, so the interactive CLI errors with "Raw mode is not supported")
 - Shell aliases live in `unix/.unix_aliases`, not in the rc files directly
 - `setup_github_backup()` installs a daily user timer running `~/dev/bash/github-backup.sh`
-  (from the bash tools repo): every GitHub repo mirrored to `~/backups/github/mirrors`, a
-  dated `git bundle` per repo under `bundles/`, last 7 days kept, bundles rclone-synced
-  straight to `dropbox:99-system/github-backups` (not via the FUSE mount). Needs
+  (from the bash tools repo): every GitHub repo mirrored to `~/backups/github/mirrors`; a
+  `git bundle` written to `bundles/<repo>/<date>.bundle` only when the repo's refs changed
+  (sha256 stamp in the mirror), newest 5 per repo kept; bundles rclone-synced straight to
+  `dropbox:99-system/github-backups` (not via the FUSE mount), so a quiet day uploads nothing. Needs
   `github-cli` + `gh auth login` once per machine; `systemctl --user start github-backup` runs it now
 - `applications/` holds `.desktop` overrides, linked **per file** into `~/.local/share/applications/`
   (that dir also has untracked Steam/Chrome entries). `yazi.desktop` exists because the stock entry
