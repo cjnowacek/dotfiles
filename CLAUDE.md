@@ -197,6 +197,12 @@ old Mesa), and Maya targets GNOME anyway, so the VM keeps GNOME and gets
   `kitty -e yazi ~/Dropbox`, right-click menu Open / Mount|Unmount /
   Restart. `apply.sh` links it into `~/.local/share/gnome-shell/extensions`
   and enables it (a first install shows up after the next login).
+- **Mouse back/forward buttons** on the VM: the SPICE vdagent's uinput
+  tablet advertises only left/middle/right, so side buttons are dropped
+  while the agent runs. `gnome/.config/autostart/spice-vdagent.desktop`
+  (`Hidden=true`, linked by `apply.sh` on VMs) keeps the user agent off;
+  input falls to the QEMU USB tablet which has BTN_SIDE/EXTRA. Trade-off:
+  no host clipboard sharing / auto-resize. Delete the link to get them back.
 - kitty is the default terminal there too: `apply.sh` sets
   `default-applications.terminal`, binds Super+Return (same as hyprland.conf)
   and Ctrl+Alt+T to kitty, and puts kitty first in the dash favourites.

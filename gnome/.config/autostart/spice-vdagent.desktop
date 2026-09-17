@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Spice vdagent (disabled)
+Exec=/usr/bin/spice-vdagent
+Hidden=true
+# Rocky VM: the SPICE agent's uinput tablet only defines left/middle/right,
+# so mouse back/forward buttons never reach the guest while it runs. Hidden
+# here overrides /etc/xdg/autostart/spice-vdagent.desktop for this user;
+# pointer input falls through to the QEMU USB tablet, which has the side
+# buttons. Cost: no clipboard sharing / auto-resize with the host.
+# Re-enable: delete ~/.config/autostart/spice-vdagent.desktop.

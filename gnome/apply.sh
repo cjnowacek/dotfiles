@@ -102,6 +102,15 @@ for ext in "$UT" "$DR"; do
   fi
 done
 
+# --- VM only: keep the SPICE user agent off so mouse side buttons work -------
+# (its uinput tablet has no back/forward buttons; see the .desktop comment)
+if [[ -x /usr/bin/spice-vdagent ]] && [[ "$(systemd-detect-virt 2>/dev/null)" != "none" ]]; then
+  mkdir -p "$HOME/.config/autostart"
+  ln -sfn "$DOTFILES_DIR/gnome/.config/autostart/spice-vdagent.desktop" "$HOME/.config/autostart/spice-vdagent.desktop"
+  pkill -x spice-vdagent 2>/dev/null || true
+  log "spice-vdagent autostart disabled (mouse side buttons > clipboard sharing)"
+fi
+
 # --- Wallpaper / lock screen from the shared hypr assets ---------------------
 log "Setting wallpaper and lock screen"
 gsettings set org.gnome.desktop.background picture-uri "file://$ASSETS/wallpaper.jpg"
