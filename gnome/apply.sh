@@ -81,9 +81,26 @@ if ! gnome-extensions info "$UT" &>/dev/null && [[ ! -d "$UT_DIR" ]]; then
   fi
   rm -rf "$tmp"
 fi
-gnome-extensions enable "$UT" 2>/dev/null || true
 # Schema lives inside the extension dir, so write the key with dconf.
 dconf write /org/gnome/shell/extensions/user-theme/name "'Flexoki'"
+
+# --- Dropbox (rclone) top-bar indicator: our own extension, tracked here ---
+DR=dropbox-rclone@cjnowacek.github.com
+mkdir -p "$HOME/.local/share/gnome-shell/extensions"
+ln -sfn "$DOTFILES_DIR/gnome/.local/share/gnome-shell/extensions/$DR" \
+  "$HOME/.local/share/gnome-shell/extensions/$DR"
+
+# Enable both. `gnome-extensions enable` only works once the running shell
+# has scanned the dir (next login); writing enabled-extensions directly
+# makes the shell pick them up at that login without another step.
+for ext in "$UT" "$DR"; do
+  gnome-extensions enable "$ext" 2>/dev/null && continue
+  cur=$(gsettings get org.gnome.shell enabled-extensions)
+  if [[ "$cur" != *"'$ext'"* ]]; then
+    if [[ "$cur" == "@as []" ]]; then new="['$ext']"; else new="${cur%]}, '$ext']"; fi
+    gsettings set org.gnome.shell enabled-extensions "$new"
+  fi
+done
 
 # --- Wallpaper / lock screen from the shared hypr assets ---------------------
 log "Setting wallpaper and lock screen"

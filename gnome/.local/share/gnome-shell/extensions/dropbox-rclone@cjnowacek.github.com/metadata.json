@@ -1,0 +1,7 @@
+{
+  "uuid": "dropbox-rclone@cjnowacek.github.com",
+  "name": "Dropbox (rclone)",
+  "description": "Top-bar status for the on-demand rclone Dropbox mount. GNOME stand-in for the waybar custom/dropbox module: left-click opens ~/Dropbox in yazi (mounting first), right-click menu mounts/unmounts/restarts.",
+  "shell-version": ["40", "41", "42", "43", "44"],
+  "url": "https://github.com/cjnowacek/dotfiles"
+}

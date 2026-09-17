@@ -187,6 +187,14 @@ old Mesa), and Maya targets GNOME anyway, so the VM keeps GNOME and gets
   and selects with `dconf write .../user-theme/name`. GNOME Shell only scans
   the user extension dir at login, so a first install needs a relogin, or
   the shell's own D-Bus `InstallRemoteExtension` call to load it live.
+- Dropbox in the top bar: `gnome/.local/share/gnome-shell/extensions/
+  dropbox-rclone@cjnowacek.github.com/` is a small GNOME 40-44 (legacy
+  `imports`, not ESM) extension mirroring the waybar `custom/dropbox`
+  module: Nerd Font glyph + "Dropbox", blue mounted / red down (polls
+  /proc/mounts every 10 s), left-click mounts if needed and opens
+  `kitty -e yazi ~/Dropbox`, right-click menu Open / Mount|Unmount /
+  Restart. `apply.sh` links it into `~/.local/share/gnome-shell/extensions`
+  and enables it (a first install shows up after the next login).
 - kitty is the default terminal there too: `apply.sh` sets
   `default-applications.terminal`, binds Super+Return (same as hyprland.conf)
   and Ctrl+Alt+T to kitty, and puts kitty first in the dash favourites.

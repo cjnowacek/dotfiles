@@ -1,0 +1,7 @@
+/* Flexoki, same as waybar #custom-dropbox: blue when mounted, red when not. */
+.dropbox-rclone-label {
+    font-family: "JetBrainsMono Nerd Font";
+    font-weight: normal;
+}
+.dropbox-rclone-mounted   { color: #66a0c8; }
+.dropbox-rclone-unmounted { color: #e8705f; }
