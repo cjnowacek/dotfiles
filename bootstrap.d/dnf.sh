@@ -41,7 +41,8 @@ pkg_install_base() {
   # fuse-libs: the Neovim AppImage needs libfuse2 to run.
   local -a pkgs=(
     git curl wget file "@Development Tools"
-    ripgrep fd-find fzf eza pandoc zsh fuse-libs
+    ripgrep fd-find fzf eza pandoc zsh fuse-libs unzip
+    rclone btop
   )
   # GNOME skin (gnome/apply.sh): Papirus is in EPEL, Tweaks + user-theme in
   # AppStream. gnome/apply.sh falls back to a ~/.local Papirus if these fail.

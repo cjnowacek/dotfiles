@@ -220,6 +220,53 @@ install_nerd_font() {
   rm -rf "$tmp"
 }
 
+# Release-binary fallbacks for tools the package manager could not provide
+# (yazi is in no EL9 repo; rclone is EPEL but needs root). Dropped into
+# ~/.local/bin, which unix/.unix_aliases puts on PATH. pacman hosts get
+# both from the repos and skip these.
+install_yazi() {
+  log_step "Installing yazi"
+  if command -v yazi &>/dev/null; then
+    log "yazi already installed"
+    return 0
+  fi
+  [[ "$(uname -m)" == "x86_64" ]] || { log_error "No yazi release fallback for $(uname -m)"; return 0; }
+  local tmp
+  tmp=$(mktemp -d)
+  if curl -fsSL -o "$tmp/yazi.zip" \
+      https://github.com/sxyazi/yazi/releases/latest/download/yazi-x86_64-unknown-linux-musl.zip \
+    && unzip -qo "$tmp/yazi.zip" -d "$tmp"; then
+    mkdir -p "$HOME/.local/bin"
+    cp "$tmp"/yazi-x86_64-unknown-linux-musl/{yazi,ya} "$HOME/.local/bin/"
+    chmod 755 "$HOME/.local/bin/yazi" "$HOME/.local/bin/ya"
+    log "yazi installed to ~/.local/bin"
+  else
+    log_error "Could not download yazi"
+  fi
+  rm -rf "$tmp"
+}
+
+install_rclone() {
+  log_step "Installing rclone"
+  if command -v rclone &>/dev/null; then
+    log "rclone already installed"
+    return 0
+  fi
+  [[ "$(uname -m)" == "x86_64" ]] || { log_error "No rclone release fallback for $(uname -m)"; return 0; }
+  local tmp
+  tmp=$(mktemp -d)
+  if curl -fsSL -o "$tmp/rclone.zip" https://downloads.rclone.org/rclone-current-linux-amd64.zip \
+    && unzip -qo "$tmp/rclone.zip" -d "$tmp"; then
+    mkdir -p "$HOME/.local/bin"
+    cp "$tmp"/rclone-*-linux-amd64/rclone "$HOME/.local/bin/rclone"
+    chmod 755 "$HOME/.local/bin/rclone"
+    log "rclone installed to ~/.local/bin"
+  else
+    log_error "Could not download rclone"
+  fi
+  rm -rf "$tmp"
+}
+
 # Install Oh My Zsh
 install_oh_my_zsh() {
   log_step "Installing Oh My Zsh"
@@ -785,15 +832,19 @@ setup_rclone_dropbox() {
     return
   fi
 
+  # Resolve the binary: /usr/bin from pacman/EPEL, ~/.local/bin on a host
+  # where it was dropped in without root (the Rocky VM).
+  local rclone_bin
+  rclone_bin=$(command -v rclone)
   mkdir -p "$HOME/.config/systemd/user"
-  cat > "$HOME/.config/systemd/user/rclone-dropbox.service" << 'EOF'
+  cat > "$HOME/.config/systemd/user/rclone-dropbox.service" << EOF
 [Unit]
 Description=rclone Dropbox mount (on-demand VFS)
 After=network-online.target
 
 [Service]
 Type=notify
-ExecStart=/usr/bin/rclone mount dropbox: %h/Dropbox --vfs-cache-mode writes
+ExecStart=$rclone_bin mount dropbox: %h/Dropbox --vfs-cache-mode writes
 ExecStop=/usr/bin/fusermount -u %h/Dropbox
 Restart=on-failure
 RestartSec=10
@@ -978,6 +1029,8 @@ main() {
   install_dependencies
   install_eza
   install_nerd_font
+  install_yazi
+  install_rclone
   setup_bash_tools
   install_rust
   install_nodejs
