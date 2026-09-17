@@ -74,5 +74,8 @@ pkg_install_pipx() {
 }
 
 pkg_install_obsidian() {
-  log "No automated Obsidian install for dnf — grab the AppImage from obsidian.md"
+  # No Obsidian in EPEL; the AppImage goes into ~/.local/bin and the
+  # applications/obsidian.desktop entry launches it.
+  mkdir -p "$HOME/.local/bin"
+  install_obsidian_appimage
 }

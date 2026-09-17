@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=Obsidian
+Comment=Knowledge base
+# AppImage dropped into ~/.local/bin by bootstrap.sh install_obsidian_appimage
+# (hosts whose package manager has no Obsidian: Rocky/dnf). Papirus ships
+# the icon. --ozone-platform-hint=auto = native Wayland under GNOME/Hyprland.
+Exec=obsidian --ozone-platform-hint=auto %U
+Icon=obsidian
+Terminal=false
+Categories=Office;
+MimeType=x-scheme-handler/obsidian;
+StartupWMClass=obsidian

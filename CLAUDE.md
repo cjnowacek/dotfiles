@@ -201,6 +201,12 @@ old Mesa), and Maya targets GNOME anyway, so the VM keeps GNOME and gets
   icon, an Unmount action) stands in for the waybar module. rclone comes from
   EPEL (`sudo dnf install rclone`); the `dropbox:` remote token is copied from
   the desktop's `~/.config/rclone/rclone.conf` or made with `rclone config`.
+- Obsidian on dnf hosts: `pkg_install_obsidian` (dnf.sh) calls
+  `install_obsidian_appimage`, which puts the newest release *with an x86_64
+  AppImage* at `~/.local/bin/obsidian` (mobile-only tags have no assets).
+  `applications/obsidian.desktop` launches it with `--ozone-platform-hint=auto`
+  (native Wayland); Papirus supplies the icon. `setup_obsidian` links the
+  vault configs as on every host.
 - `install_yazi` / `install_rclone` / `install_btop` (bootstrap.sh) drop the upstream x86_64
   release binaries into `~/.local/bin` when the package manager left them
   out (yazi is in no EL9 repo; rclone is EPEL but the VM had no sudo). The

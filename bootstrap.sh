@@ -289,6 +289,28 @@ install_btop() {
   rm -rf "$tmp"
 }
 
+# Obsidian AppImage into ~/.local/bin for hosts with no package (dnf backend
+# calls this from pkg_install_obsidian). Picks the newest release that ships
+# an x86_64 AppImage: obsidian-releases tags mobile-only releases too, whose
+# asset list is empty. Needs fuse-libs (in the dnf base list).
+install_obsidian_appimage() {
+  if command -v obsidian &>/dev/null; then
+    log "Obsidian already installed"
+    return 0
+  fi
+  [[ "$(uname -m)" == "x86_64" ]] || { log_error "No Obsidian AppImage fallback for $(uname -m)"; return 0; }
+  local url
+  url=$(curl -fsSL "https://api.github.com/repos/obsidianmd/obsidian-releases/releases?per_page=10" \
+    | grep -oE '"browser_download_url": *"[^"]*/Obsidian-[0-9.]+\.AppImage"' \
+    | head -1 | grep -oE 'https://[^"]+')
+  if [[ -n "$url" ]] && curl -fsSL -o "$HOME/.local/bin/obsidian" "$url"; then
+    chmod 755 "$HOME/.local/bin/obsidian"
+    log "Obsidian AppImage installed to ~/.local/bin/obsidian ($(basename "$url"))"
+  else
+    log_error "Could not download the Obsidian AppImage"
+  fi
+}
+
 # Install Oh My Zsh
 install_oh_my_zsh() {
   log_step "Installing Oh My Zsh"
