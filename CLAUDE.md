@@ -206,6 +206,15 @@ old Mesa), and Maya targets GNOME anyway, so the VM keeps GNOME and gets
   icon, an Unmount action) stands in for the waybar module. rclone comes from
   EPEL (`sudo dnf install rclone`); the `dropbox:` remote token is copied from
   the desktop's `~/.config/rclone/rclone.conf` or made with `rclone config`.
+- **Maya clicks off from the cursor** (Viewport selection lands beside where
+  you clicked): not scaling, DPI, the virtio cursor bug, or Qt tablet input;
+  all checked 2026-09-17. It is mutter failing to reparent Maya's main X11
+  window into a frame after launch, so XWayland pointer translation for
+  that surface is off. It clears when mutter re-manages the stack: run
+  `gnome/xwayland-reframe.sh` (maps/unmaps a 1px xev window) or maximise
+  the Maya window. Permanent fix if it keeps happening: log in with
+  "GNOME on Xorg" instead (also removes the need for the X11 sign-in env in
+  `~/.local/bin/maya`).
 - Obsidian on dnf hosts: `pkg_install_obsidian` (dnf.sh) calls
   `install_obsidian_appimage`, which puts the newest release *with an x86_64
   AppImage* at `~/.local/bin/obsidian` (mobile-only tags have no assets).
