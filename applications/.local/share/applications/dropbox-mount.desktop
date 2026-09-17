@@ -1,0 +1,15 @@
+[Desktop Entry]
+Type=Application
+Name=Dropbox (rclone)
+Comment=Mount Dropbox on demand via rclone-dropbox.service and open it
+# GNOME stand-in for the waybar dropbox module: left-click = mount + open,
+# the Unmount action = stop. Same on-demand service bootstrap.sh installs.
+Exec=sh -c "systemctl --user start rclone-dropbox.service; sleep 1; xdg-open ~/Dropbox"
+Icon=dropbox
+Terminal=false
+Categories=Network;FileTransfer;
+Actions=Unmount;
+
+[Desktop Action Unmount]
+Name=Unmount Dropbox
+Exec=systemctl --user stop rclone-dropbox.service

@@ -26,6 +26,7 @@ The setup script will:
 - ✅ Install Node.js (for markdown preview)
 - ✅ Install Oh My Zsh
 - ✅ Create symlinks for all configuration files
+- ✅ On GNOME (Rocky VM): apply the Flexoki skin, fonts, icons, wallpaper (`gnome/apply.sh`)
 - ✅ Install Neovim plugins automatically
 - ✅ Set up Python environment with pipx
 - ✅ Change default shell to zsh

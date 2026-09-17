@@ -19,6 +19,9 @@ dotfiles/
 ├── wofi/.config/wofi/    → ~/.config/wofi
 ├── kitty/.config/kitty/  → ~/.config/kitty
 ├── dunst/.config/dunst/  → ~/.config/dunst
+├── gtk/.config/gtk-{3,4}.0/*  → ~/.config/gtk-{3,4}.0/  (linked per file; bookmarks stays real)
+├── gtk/.local/share/themes/Flexoki/ → ~/.local/share/themes/Flexoki  (GTK3 theme, GNOME host)
+├── gnome/apply.sh        (gsettings skin for the GNOME host; run by setup_gnome)
 ├── applications/.local/share/applications/*.desktop → ~/.local/share/applications/  (linked per file)
 ├── obsidian/.obsidian/   → <vault>/.obsidian   (each vault; both OSes)
 ├── unix/.unix_aliases    (sourced by both .bashrc and .zshrc)
@@ -154,6 +157,52 @@ package manager did not provide it. Neovim comes from the AppImage
 (`fuse-libs` is in the dnf list for it). The Hyprland/waybar/wofi/dunst
 symlinks are still created under GNOME and simply sit unused. Clone over
 HTTPS in the VM (repo is public; no SSH key needed for read-only).
+
+Hyprland is not packaged for EL9 (no base/EPEL/RPM Fusion build; GNOME 40 +
+old Mesa), and Maya targets GNOME anyway, so the VM keeps GNOME and gets
+**skinned to match** instead (2026-09-17):
+
+- `gtk/.local/share/themes/Flexoki/gtk-3.0/gtk.css` imports GTK's built-in
+  `Adwaita/gtk-contained-dark.css` and overrides the colours with the
+  kitty/waybar Flexoki palette (`#1c1b1a` chrome, `#100f0f` views, `#cecdc3`
+  text, `#66a0c8` accent). It is its own named theme because Rocky's
+  `Adwaita-dark` package ships only `gtk-2.0/`, so `gtk-theme=Adwaita-dark`
+  silently falls back to light Adwaita. `gtk/.config/gtk-4.0/gtk.css` does the
+  same with libadwaita's `@define-color` names.
+- `gnome/apply.sh` (user-level, idempotent, called by `setup_gnome` only when
+  `XDG_CURRENT_DESKTOP` contains GNOME): sets gtk-theme Flexoki, Papirus-Dark
+  icons (EPEL package, else a `~/.local/share/icons` install), JetBrainsMono
+  Nerd Font for UI/mono, the hypr `assets/wallpaper.jpg` + `lockscreen.png`,
+  disables the Rocky background logo, and writes kitty.conf's palette into
+  the default GNOME Terminal profile.
+- kitty is the default terminal there too: `apply.sh` sets
+  `default-applications.terminal`, binds Super+Return (same as hyprland.conf)
+  and Ctrl+Alt+T to kitty, and puts kitty first in the dash favourites.
+  GLib on EL9 ignores that key for `Terminal=true` launchers (hardcoded
+  gnome-terminal/xterm list), hence the `applications/yazi.desktop` override.
+- `apply.sh` also replays the hyprland.conf binds Mutter can express: 10
+  static workspaces on Super+N / Super+Shift+N, Super+Q close, Super+F
+  fullscreen, Super+D app grid, Super+E file manager (yazi in kitty if
+  installed, else nautilus), Super+Ctrl+L lock, Super+Shift+E logout,
+  Super+Shift+P power dialog, Print / Super+Print / Super+Shift+S
+  screenshots, Super+drag move and Super+right-drag resize, Super+h/l cycle
+  windows, Super+Shift+hjkl/arrows move to monitor. Not mappable: floating
+  toggle, pseudo/split, directional focus, step resize, special workspaces,
+  cliphist. Super+1..9 dash launching and Super+h minimize are cleared.
+- Dropbox on the VM is the same on-demand `rclone-dropbox.service` as the
+  Hyprland hosts. `applications/dropbox-mount.desktop` (Papirus `dropbox`
+  icon, an Unmount action) stands in for the waybar module. rclone comes from
+  EPEL (`sudo dnf install rclone`); the `dropbox:` remote token is copied from
+  the desktop's `~/.config/rclone/rclone.conf` or made with `rclone config`.
+- `install_nerd_font` (bootstrap.sh) downloads the Nerd Font release into
+  `~/.local/share/fonts` when no package provided it (EPEL has none).
+- **VTE gotchas:** GNOME Terminal must use the `... Nerd Font Mono` variant
+  (the non-Mono one renders icons two cells wide); and `gnome-terminal-server`
+  caches fontconfig at start, so a font installed while a terminal is open
+  shows as a proportional fallback with huge letter spacing until *every*
+  terminal window is closed and reopened. kitty is unaffected.
+- `./bootstrap.sh doctor` under GNOME checks only kitty/yazi/btop/nvim/zsh
+  and that gtk-theme is Flexoki; the hypr tool list is skipped there.
 
 ## Windows (cross-platform) half
 

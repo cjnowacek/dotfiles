@@ -43,6 +43,10 @@ pkg_install_base() {
     git curl wget file "@Development Tools"
     ripgrep fd-find fzf eza pandoc zsh fuse-libs
   )
+  # GNOME skin (gnome/apply.sh): Papirus is in EPEL, Tweaks + user-theme in
+  # AppStream. gnome/apply.sh falls back to a ~/.local Papirus if these fail.
+  [[ "${XDG_CURRENT_DESKTOP:-}" == *GNOME* ]] && \
+    pkgs+=(papirus-icon-theme gnome-tweaks gnome-shell-extension-user-theme)
   # WSL doesn't need xclip (uses Windows clipboard)
   [[ "$IS_WSL" != true ]] && pkgs+=(xclip)
   sudo dnf install -y --setopt=strict=0 "${pkgs[@]}"

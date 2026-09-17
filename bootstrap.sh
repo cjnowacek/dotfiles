@@ -195,6 +195,31 @@ install_eza() {
   rm -rf "$tmp"
 }
 
+# JetBrainsMono Nerd Font: kitty, waybar, hyprlock, and the GNOME skin all
+# use it. pacman ships it (ttf-jetbrains-mono-nerd); EPEL/apt do not, so
+# drop the upstream release into ~/.local/share/fonts when fontconfig
+# can't see it.
+install_nerd_font() {
+  log_step "Installing JetBrainsMono Nerd Font"
+  if fc-list 2>/dev/null | grep -qi "jetbrainsmono nerd"; then
+    log "JetBrainsMono Nerd Font already installed"
+    return 0
+  fi
+  local dir="$HOME/.local/share/fonts/JetBrainsMonoNerd" tmp
+  tmp=$(mktemp -d)
+  if curl -fsSL -o "$tmp/jbm.tar.xz" \
+      https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.tar.xz; then
+    mkdir -p "$dir"
+    tar -xJf "$tmp/jbm.tar.xz" -C "$dir"
+    rm -f "$dir"/LICENSE* "$dir"/README*
+    fc-cache -f >/dev/null 2>&1 || true
+    log "JetBrainsMono Nerd Font installed to $dir (restart terminals to pick it up)"
+  else
+    log_error "Could not download JetBrainsMono Nerd Font"
+  fi
+  rm -rf "$tmp"
+}
+
 # Install Oh My Zsh
 install_oh_my_zsh() {
   log_step "Installing Oh My Zsh"
@@ -346,6 +371,29 @@ setup_dunst() {
   create_symlink "$DOTFILES_DIR/dunst/.config/dunst" "$HOME/.config/dunst"
   command -v dunstctl >/dev/null && dunstctl reload 2>/dev/null
   log "dunst configuration linked"
+}
+
+# Setup GTK theme (Flexoki) + gtk settings.ini. Linked per file so
+# ~/.config/gtk-3.0/bookmarks (nautilus) stays a real file.
+setup_gtk() {
+  log_step "Setting up GTK configuration"
+  local v f
+  for v in gtk-3.0 gtk-4.0; do
+    for f in "$DOTFILES_DIR/gtk/.config/$v"/*; do
+      create_symlink "$f" "$HOME/.config/$v/$(basename "$f")"
+    done
+  done
+  # Flexoki = built-in Adwaita dark + the kitty/waybar palette. Named theme
+  # dir because Rocky's Adwaita-dark package has no gtk-3.0 half.
+  create_symlink "$DOTFILES_DIR/gtk/.local/share/themes/Flexoki" "$HOME/.local/share/themes/Flexoki"
+  log "GTK configuration linked"
+}
+
+# Skin GNOME (Rocky/Maya VM) like the Hyprland hosts. No-op elsewhere.
+setup_gnome() {
+  [[ "${XDG_CURRENT_DESKTOP:-}" == *GNOME* ]] || return 0
+  log_step "Applying GNOME settings (gnome/apply.sh)"
+  DOTFILES_DIR="$DOTFILES_DIR" bash "$DOTFILES_DIR/gnome/apply.sh"
 }
 
 # Setup Obsidian configuration
@@ -778,7 +826,9 @@ doctor() {
   local link target
   for link in "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.zprofile" \
     "$HOME/.config/nvim" "$HOME/.config/hypr" "$HOME/.config/waybar" \
-    "$HOME/.config/wofi" "$HOME/.config/kitty" "$HOME/.config/dunst" "$HOME/.local/share/applications/yazi.desktop"; do
+    "$HOME/.config/wofi" "$HOME/.config/kitty" "$HOME/.config/dunst" "$HOME/.local/share/applications/yazi.desktop" \
+    "$HOME/.config/gtk-3.0/settings.ini" "$HOME/.config/gtk-4.0/gtk.css" "$HOME/.config/gtk-4.0/settings.ini" \
+    "$HOME/.local/share/themes/Flexoki"; do
     if [[ ! -e "$link" && ! -L "$link" ]]; then
       log "MISSING  $link (run: ./bootstrap.sh links)"
       ok=false
@@ -835,6 +885,14 @@ doctor() {
   local cmd
   local doctor_tools=(waybar hypridle hyprlock dunst cliphist wofi grim slurp \
     swappy playerctl wl-copy kitty yazi btop nvim zsh)
+  # GNOME host (Rocky): the hypr stack is unpackaged and unused there.
+  if [[ "${XDG_CURRENT_DESKTOP:-}" == *GNOME* ]]; then
+    doctor_tools=(kitty yazi btop nvim zsh)
+    if [[ "$(gsettings get org.gnome.desktop.interface gtk-theme 2>/dev/null)" != "'Flexoki'" ]]; then
+      log "GNOME not skinned (gtk-theme != Flexoki): run gnome/apply.sh"
+      ok=false
+    fi
+  fi
   # brightnessctl is only bound in the laptop host.conf
   [[ "$HOST_ROLE" == "laptop" ]] && doctor_tools+=(brightnessctl)
   for cmd in "${doctor_tools[@]}"; do
@@ -911,6 +969,7 @@ main() {
     setup_wofi
     setup_kitty
     setup_dunst
+    setup_gtk
     return
   fi
 
@@ -918,6 +977,7 @@ main() {
   check_os
   install_dependencies
   install_eza
+  install_nerd_font
   setup_bash_tools
   install_rust
   install_nodejs
@@ -936,6 +996,8 @@ main() {
   setup_wofi
   setup_kitty
   setup_dunst
+  setup_gtk
+  setup_gnome
   setup_obsidian
   setup_python
   setup_ssh_agent
