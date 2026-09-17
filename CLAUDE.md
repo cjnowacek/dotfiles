@@ -22,7 +22,8 @@ dotfiles/
 ├── applications/.local/share/applications/*.desktop → ~/.local/share/applications/  (linked per file)
 ├── obsidian/.obsidian/   → <vault>/.obsidian   (each vault; both OSes)
 ├── unix/.unix_aliases    (sourced by both .bashrc and .zshrc)
-├── bootstrap.sh          (full system setup script)
+├── bootstrap.sh          (full system setup script; OS-agnostic steps + dispatch)
+├── bootstrap.d/<pm>.sh   (one file per package manager: pacman, apt, dnf, brew)
 ├── bootstrap.ps1         (Windows setup: nvim + PowerShell profile + Obsidian)
 ├── powershell/Microsoft.PowerShell_profile.ps1   (Windows alias equivalent)
 └── emacs/                (unused)
@@ -126,11 +127,25 @@ Two more gotchas:
   don't exist are skipped with a log line, so a stale path fails silently — keep this list and
   the `-Vaults` default in `bootstrap.ps1` in sync when a vault moves.
 
+## Package manager backends (`bootstrap.d/`)
+
+`bootstrap.sh` holds only the OS-agnostic flow (symlinks, curl-installed tools,
+repos, systemd units, doctor). Everything that depends on the package manager
+lives in `bootstrap.d/<manager>.sh`, which `check_os` sources after detecting
+pacman, apt, dnf, or brew. Each backend must define the six functions in the
+`PKG_INTERFACE` array in `bootstrap.sh` (`pkg_install_base`, `_neovim`,
+`_nodejs`, `_zk`, `_pipx`, `_obsidian`); `load_pkg_backend` exits with the
+missing name if one is absent. Backends may call the shared helpers
+`install_neovim_appimage` and `build_zk_from_source` from `bootstrap.sh`, and
+read `IS_WSL`. To add a distro: one detection branch in `check_os`, one new
+file in `bootstrap.d/`. Windows stays separate in `bootstrap.ps1` because
+PowerShell cannot share bash code.
+
 ## Rocky / RHEL-family (dnf) half
 
-The `rocky-maya` libvirt VM (Rocky 9, GNOME) runs the same `bootstrap.sh`.
-`check_os` reads `/etc/os-release`: Rocky/Alma/CentOS/RHEL set `IS_EL=true`,
-which makes the dnf branch install `epel-release` and enable CRB before the
+The `rocky-maya` libvirt VM (Rocky 9, GNOME) runs the same `bootstrap.sh`
+via `bootstrap.d/dnf.sh`. Its `dnf_is_el` reads `/etc/os-release`; on
+Rocky/Alma/CentOS/RHEL it installs `epel-release` and enables CRB before the
 package list (ripgrep, fd-find, fzf, pandoc live in EPEL, not base). The dnf
 install runs with `--setopt=strict=0` so a package missing from that distro's
 repos is a warning, not an abort. eza is not in EPEL 9, so `install_eza`

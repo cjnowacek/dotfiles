@@ -32,7 +32,7 @@ log_step() {
   echo "===> $1"
 }
 
-# Check if running on supported OS
+# Detect OS and package manager, then load the matching backend.
 check_os() {
   log_step "Checking operating system"
 
@@ -46,8 +46,6 @@ check_os() {
 
   if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     OS="linux"
-
-    # Detect package manager
     if command -v pacman &>/dev/null; then
       PKG_MANAGER="pacman"
       log "Detected Arch Linux"
@@ -56,21 +54,7 @@ check_os() {
       log "Detected Debian/Ubuntu"
     elif command -v dnf &>/dev/null; then
       PKG_MANAGER="dnf"
-      # Rocky/Alma/CentOS/RHEL keep only slow-moving packages in base; the
-      # dev tools below (ripgrep, fd, fzf, pandoc) come from EPEL. Fedora
-      # ships them directly and has no EPEL.
-      local os_id="" os_like=""
-      if [[ -r /etc/os-release ]]; then
-        os_id=$(. /etc/os-release && echo "${ID:-}")
-        os_like=$(. /etc/os-release && echo "${ID_LIKE:-}")
-      fi
-      if [[ "$os_id" =~ ^(rocky|almalinux|centos|rhel)$ || "$os_like" == *rhel* ]]; then
-        IS_EL=true
-        log "Detected Enterprise Linux ($os_id) — will enable EPEL"
-      else
-        IS_EL=false
-        log "Detected Fedora"
-      fi
+      log "Detected Fedora/RHEL family"
     else
       log_error "Unsupported package manager"
       exit 1
@@ -83,6 +67,40 @@ check_os() {
     log_error "Unsupported operating system: $OSTYPE"
     exit 1
   fi
+
+  load_pkg_backend
+}
+
+# Everything that differs per package manager lives in bootstrap.d/<manager>.sh.
+# Each backend defines exactly these functions; the generic install_* steps
+# below call them. To support a new distro: add a detection branch in
+# check_os and a bootstrap.d/<manager>.sh that defines all of them.
+PKG_INTERFACE=(
+  pkg_install_base      # refresh repos, install git/curl/build tools/ripgrep/fd/fzf/eza/pandoc/zsh
+  pkg_install_neovim    # a LazyVim-capable nvim (package or install_neovim_appimage)
+  pkg_install_nodejs    # node + npm
+  pkg_install_zk        # zk (package or build_zk_from_source)
+  pkg_install_pipx      # pipx on PATH
+  pkg_install_obsidian  # Obsidian desktop, or a log line saying it's manual
+)
+
+load_pkg_backend() {
+  local backend="$DOTFILES_DIR/bootstrap.d/$PKG_MANAGER.sh"
+  if [[ ! -r "$backend" ]]; then
+    log_error "No package manager backend at $backend"
+    exit 1
+  fi
+  # shellcheck source=/dev/null
+  source "$backend"
+
+  local fn
+  for fn in "${PKG_INTERFACE[@]}"; do
+    if ! declare -F "$fn" >/dev/null; then
+      log_error "$backend does not define $fn"
+      exit 1
+    fi
+  done
+  log "Package manager backend: $PKG_MANAGER"
 }
 
 # Backup existing files
@@ -116,162 +134,37 @@ create_symlink() {
 # Install system dependencies
 install_dependencies() {
   log_step "Installing system dependencies"
-
-  case "$PKG_MANAGER" in
-  pacman)
-    log "Using pacman"
-
-    # An aborted pacman leaves a stale lock that fails every later run.
-    # Only remove it when no pacman is actually running.
-    if [[ -f /var/lib/pacman/db.lck ]] && ! pgrep -x pacman >/dev/null; then
-      log "Removing stale pacman lock (no pacman running)"
-      sudo rm -f /var/lib/pacman/db.lck
-    fi
-
-    # On a machine that hasn't updated in months the old keyring rejects
-    # current package signatures ("marginal trust"), so refresh it first.
-    sudo pacman -Sy --noconfirm archlinux-keyring
-    sudo pacman -Su --noconfirm
-
-    if [[ "$IS_WSL" == true ]]; then
-      # WSL doesn't need xclip (uses Windows clipboard)
-      sudo pacman -S --needed --noconfirm \
-        git \
-        curl \
-        wget \
-        base-devel \
-        ripgrep \
-        fd \
-        fzf \
-        eza \
-        pandoc \
-        zsh
-    else
-      sudo pacman -S --needed --noconfirm \
-        git \
-        curl \
-        wget \
-        base-devel \
-        xclip \
-        ripgrep \
-        fd \
-        fzf \
-        eza \
-        pandoc \
-        zsh
-    fi
-
-    # Everything the hypr/waybar configs exec or bind. The configs land on
-    # every Linux machine, so a missing tool here is a silently dead keybind
-    # or autostart (this is how the laptop ran without dunst, cliphist, and
-    # the waybar Nerd Font icons for months).
-    if [[ "$IS_WSL" != true ]] && command -v Hyprland &>/dev/null; then
-      log "Installing Hyprland session tools"
-      sudo pacman -S --needed --noconfirm \
-        waybar hypridle hyprlock hyprpaper hyprsunset \
-        dunst cliphist wl-clipboard wofi \
-        grim slurp swappy playerctl brightnessctl \
-        pavucontrol kitty yazi btop rclone fuse3 \
-        ttf-jetbrains-mono-nerd
-    fi
-
-    # Install yay AUR helper
-    if ! command -v yay &>/dev/null; then
-      log "Installing yay (AUR helper)"
-      local yay_tmp="/tmp/yay-build"
-      rm -rf "$yay_tmp"
-      git clone https://aur.archlinux.org/yay.git "$yay_tmp"
-      (cd "$yay_tmp" && makepkg -si --noconfirm)
-      rm -rf "$yay_tmp"
-      log "yay installed"
-    else
-      log "yay already installed"
-    fi
-    ;;
-  apt)
-    log "Using apt"
-    sudo apt-get update
-
-    if [[ "$IS_WSL" == true ]]; then
-      # WSL doesn't need xclip
-      sudo apt-get install -y \
-        git \
-        curl \
-        wget \
-        build-essential \
-        ripgrep \
-        fd-find \
-        fzf \
-        eza \
-        pandoc \
-        zsh \
-        libasound2t64 \
-        libnotify4 \
-        libnss3 \
-        xdg-utils \
-        libsecret-1-0
-    else
-      sudo apt-get install -y \
-        git \
-        curl \
-        wget \
-        build-essential \
-        xclip \
-        ripgrep \
-        fd-find \
-        fzf \
-        eza \
-        pandoc \
-        zsh
-    fi
-
-    # Ubuntu/Debian: fd is packaged as "fd-find" and the binary is usually "fdfind"
-    if command -v fdfind >/dev/null && ! command -v fd >/dev/null; then
-      log "Creating fd symlink (fdfind -> fd)"
-      sudo ln -sf "$(command -v fdfind)" /usr/local/bin/fd
-    fi
-    ;;
-  dnf)
-    log "Using dnf"
-
-    if [[ "$IS_EL" == true ]]; then
-      log "Enabling EPEL and CRB repos"
-      sudo dnf install -y epel-release
-      # CRB (CodeReady Builder) holds build deps that EPEL packages pull in.
-      # Rocky/Alma ship a `crb` helper; fall back to config-manager on others.
-      if command -v crb &>/dev/null; then
-        sudo crb enable
-      else
-        sudo dnf install -y dnf-plugins-core
-        sudo dnf config-manager --set-enabled crb || sudo dnf config-manager --set-enabled powertools || true
-      fi
-    fi
-
-    # "Development Tools" is the group name on both Fedora and EL; the
-    # @development-tools id only exists on Fedora.
-    # strict=0 turns an unavailable package into a warning instead of
-    # aborting the whole transaction (eza is not in EPEL 9 — see install_eza).
-    # file: install_neovim validates the AppImage with it.
-    # fuse-libs: the Neovim AppImage needs libfuse2 to run.
-    local -a dnf_pkgs=(
-      git curl wget file "@Development Tools"
-      ripgrep fd-find fzf eza pandoc zsh fuse-libs
-    )
-    # WSL doesn't need xclip (uses Windows clipboard)
-    [[ "$IS_WSL" != true ]] && dnf_pkgs+=(xclip)
-    sudo dnf install -y --setopt=strict=0 "${dnf_pkgs[@]}"
-    ;;
-  brew)
-    if ! command -v brew &>/dev/null; then
-      log "Installing Homebrew"
-      /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    fi
-    log "Using Homebrew"
-    brew install git curl wget ripgrep fd fzf eza pandoc zsh
-    ;;
-  esac
-
+  pkg_install_base
   log "Dependencies installed"
+}
+
+# Shared helpers for backends whose repos lack a usable package.
+
+# Upstream Neovim AppImage into /usr/local/bin (needs libfuse2 and `file`).
+install_neovim_appimage() {
+  local url="https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.appimage"
+  log "Downloading Neovim AppImage..."
+  sudo curl -fLLo /usr/local/bin/nvim "$url" || {
+    log_error "Failed to download Neovim AppImage"
+    return 1
+  }
+  sudo chmod +x /usr/local/bin/nvim
+
+  if ! file /usr/local/bin/nvim | grep -qi 'ELF'; then
+    log_error "Downloaded Neovim is not a valid executable"
+    head -c 200 /usr/local/bin/nvim; echo
+    sudo rm -f /usr/local/bin/nvim
+    return 1
+  fi
+}
+
+# Build zk from source (caller installs go, make, git first).
+build_zk_from_source() {
+  rm -rf /tmp/zk-build
+  git clone https://github.com/zk-org/zk.git /tmp/zk-build
+  (cd /tmp/zk-build && make build)
+  sudo install -m 0755 /tmp/zk-build/zk /usr/local/bin/zk
+  rm -rf /tmp/zk-build
 }
 
 # eza is aliased in unix/.unix_aliases but is missing from EPEL 9, so on
@@ -338,35 +231,10 @@ install_neovim() {
     return 0
   fi
 
-  case "$PKG_MANAGER" in
-  pacman)
-    sudo pacman -S --needed --noconfirm neovim
-    ;;
-  brew)
-    brew install neovim
-    ;;
-  *)
-    # AppImage fallback for Debian/Fedora/WSL
-    local url="https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.appimage"
-    log "Downloading Neovim AppImage..."
-    sudo curl -fLLo /usr/local/bin/nvim "$url" || {
-      log_error "Failed to download Neovim AppImage"
-      return 1
-    }
-    sudo chmod +x /usr/local/bin/nvim
-
-    if ! file /usr/local/bin/nvim | grep -qi 'ELF'; then
-      log_error "Downloaded Neovim is not a valid executable"
-      head -c 200 /usr/local/bin/nvim; echo
-      sudo rm -f /usr/local/bin/nvim
-      return 1
-    fi
-    ;;
-  esac
+  pkg_install_neovim
 
   log "Neovim installed: $(nvim --version | head -n1)"
 }
-
 
 # Setup shell configurations
 setup_shell() {
@@ -520,22 +388,7 @@ install_nodejs() {
   if ! command -v node &>/dev/null; then
     log "Installing Node.js"
 
-    case "$PKG_MANAGER" in
-    pacman)
-      sudo pacman -S --needed --noconfirm nodejs npm
-      ;;
-    apt)
-      curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
-      sudo apt-get install -y nodejs
-      ;;
-    dnf)
-      sudo dnf install -y nodejs npm
-      ;;
-    brew)
-      brew install node
-      ;;
-    esac
-
+    pkg_install_nodejs
     log "Node.js installed"
   else
     log "Node.js already installed"
@@ -552,31 +405,7 @@ install_zk() {
     return 0
   fi
 
-  case "$PKG_MANAGER" in
-  pacman)
-    sudo pacman -S --needed --noconfirm zk
-    ;;
-  apt)
-    sudo apt update
-    sudo apt install -y golang-go make git
-    rm -rf /tmp/zk-build
-    git clone https://github.com/zk-org/zk.git /tmp/zk-build
-    (cd /tmp/zk-build && make build)
-    sudo install -m 0755 /tmp/zk-build/zk /usr/local/bin/zk
-    rm -rf /tmp/zk-build
-    ;;
-  dnf)
-    sudo dnf install -y golang make git
-    rm -rf /tmp/zk-build
-    git clone https://github.com/zk-org/zk.git /tmp/zk-build
-    (cd /tmp/zk-build && make build)
-    sudo install -m 0755 /tmp/zk-build/zk /usr/local/bin/zk
-    rm -rf /tmp/zk-build
-    ;;
-  brew)
-    brew install zk
-    ;;
-  esac
+  pkg_install_zk
 
   zk --version || {
     log_error "zk installation failed"
@@ -615,25 +444,7 @@ setup_python() {
   if command -v python3 &>/dev/null; then
     log "Installing pipx"
 
-    case "$PKG_MANAGER" in
-    pacman)
-      sudo pacman -S --needed --noconfirm python-pipx
-      ;;
-    apt)
-      sudo apt-get install -y pipx
-      pipx ensurepath
-      ;;
-    dnf)
-      sudo dnf install -y python3-pip
-      python3 -m pip install --user pipx
-      python3 -m pipx ensurepath
-      ;;
-    brew)
-      brew install pipx
-      pipx ensurepath
-      ;;
-    esac
-
+    pkg_install_pipx
     log "Python environment configured"
   else
     log "Warning: Python3 not found"
@@ -903,31 +714,7 @@ final_steps() {
   echo ""
   read -rp ":: Install Obsidian? (requires sudo) [y/N] " install_obsidian
   if [[ "$install_obsidian" =~ ^[Yy]$ ]]; then
-    case "$PKG_MANAGER" in
-    pacman)
-      # Obsidian moved from the AUR into the official extra repo.
-      sudo pacman -S --needed --noconfirm obsidian
-      ;;
-    apt)
-      local obsidian_deb="/tmp/obsidian.deb"
-      if [[ ! -f "$obsidian_deb" ]]; then
-        log "Downloading latest Obsidian .deb..."
-        local obsidian_url
-        obsidian_url=$(curl -sL https://api.github.com/repos/obsidianmd/obsidian-releases/releases/latest \
-          | grep -oP '"browser_download_url":\s*"\K[^"]*\.deb' | head -1)
-        curl -L -o "$obsidian_deb" "$obsidian_url"
-      fi
-      log "Installing Obsidian dependencies and package..."
-      sudo apt-get install -y libasound2t64 libnotify4 libnss3 xdg-utils libsecret-1-0 libxss1
-      sudo dpkg -i "$obsidian_deb"
-      ;;
-    brew)
-      brew install --cask obsidian
-      ;;
-    *)
-      log "No automated Obsidian install for this package manager — install manually"
-      ;;
-    esac
+    pkg_install_obsidian
     log "Obsidian installed"
   else
     log "Skipping Obsidian"
