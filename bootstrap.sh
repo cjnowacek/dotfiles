@@ -912,6 +912,51 @@ EOF
   fi
 }
 
+# Daily GitHub backup: mirrors + bundles to ~/backups/github, bundles synced
+# to Dropbox. The script lives in the bash tools repo (setup_bash_tools).
+setup_github_backup() {
+  log_step "Setting up GitHub backup timer"
+
+  local script="$HOME/dev/bash/github-backup.sh"
+  if [[ ! -x "$script" ]]; then
+    log "Skipping github-backup (script not found at $script)"
+    return
+  fi
+
+  mkdir -p "$HOME/.config/systemd/user"
+  cat > "$HOME/.config/systemd/user/github-backup.service" << 'EOF'
+[Unit]
+Description=Mirror GitHub repos locally and bundle them to Dropbox
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/dev/bash/github-backup.sh
+EOF
+  cat > "$HOME/.config/systemd/user/github-backup.timer" << 'EOF'
+[Unit]
+Description=Daily GitHub backup
+
+[Timer]
+OnCalendar=daily
+RandomizedDelaySec=1h
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+EOF
+  systemctl --user daemon-reload
+  systemctl --user enable --now github-backup.timer 2>/dev/null || true
+
+  if command -v gh &>/dev/null && gh auth status &>/dev/null; then
+    log "github-backup timer enabled (daily; run now: systemctl --user start github-backup)"
+  else
+    log "github-backup timer enabled, but gh is not logged in — the run will fail until: gh auth login"
+    command -v gh &>/dev/null || log "  (gh not installed: pacman -S github-cli)"
+  fi
+}
+
 # Main installation flow
 # Read-only health check: reports drift without changing anything.
 doctor() {
@@ -1100,6 +1145,7 @@ main() {
   setup_python
   setup_ssh_agent
   setup_rclone_dropbox
+  setup_github_backup
   change_shell
   final_steps
 }

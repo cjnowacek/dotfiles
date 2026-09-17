@@ -120,6 +120,11 @@ Two more gotchas:
   snacks.nvim, which LazyVim already ships. Run it from the nvim terminal split or PowerShell,
   not raw Git Bash (no TTY, so the interactive CLI errors with "Raw mode is not supported")
 - Shell aliases live in `unix/.unix_aliases`, not in the rc files directly
+- `setup_github_backup()` installs a daily user timer running `~/dev/bash/github-backup.sh`
+  (from the bash tools repo): every GitHub repo mirrored to `~/backups/github/mirrors`, a
+  dated `git bundle` per repo under `bundles/`, last 7 days kept, bundles rclone-synced
+  straight to `dropbox:99-system/github-backups` (not via the FUSE mount). Needs
+  `github-cli` + `gh auth login` once per machine; `systemctl --user start github-backup` runs it now
 - `applications/` holds `.desktop` overrides, linked **per file** into `~/.local/share/applications/`
   (that dir also has untracked Steam/Chrome entries). `yazi.desktop` exists because the stock entry
   has `Terminal=true` and wofi's terminal autodetection silently fails on it, so selecting Yazi in
