@@ -58,6 +58,33 @@ gsettings set $I color-scheme 'prefer-dark' 2>/dev/null || true
 gsettings set org.gnome.desktop.wm.preferences titlebar-font "JetBrainsMono Nerd Font Bold 10"
 gsettings set org.gnome.desktop.wm.preferences button-layout ':minimize,maximize,close'
 
+# --- GNOME Shell (top bar) theme via the user-theme extension ---------------
+# The RPM (gnome-shell-extension-user-theme) needs root; the same extension
+# installs per-user from extensions.gnome.org. GNOME Shell only scans
+# ~/.local/share/gnome-shell/extensions at login, so on first install the
+# theme shows up after the next login (or after accepting the shell's own
+# install dialog, which loads it live).
+UT=user-theme@gnome-shell-extensions.gcampax.github.com
+UT_DIR="$HOME/.local/share/gnome-shell/extensions/$UT"
+if ! gnome-extensions info "$UT" &>/dev/null && [[ ! -d "$UT_DIR" ]]; then
+  log "Installing user-theme shell extension per-user"
+  shell_ver=$(gnome-shell --version 2>/dev/null | grep -oE '[0-9]+' | head -1)
+  tmp=$(mktemp -d)
+  dl=$(curl -fsSL "https://extensions.gnome.org/extension-info/?uuid=$UT&shell_version=$shell_ver" \
+       | python3 -c 'import json,sys; print(json.load(sys.stdin)["download_url"])' 2>/dev/null || true)
+  if [[ -n "$dl" ]] && curl -fsSL -o "$tmp/ut.zip" "https://extensions.gnome.org$dl"; then
+    mkdir -p "$UT_DIR" && unzip -qo "$tmp/ut.zip" -d "$UT_DIR"
+    [[ -d "$UT_DIR/schemas" ]] && glib-compile-schemas "$UT_DIR/schemas"
+    log "user-theme installed; takes effect at next login"
+  else
+    log "Could not fetch user-theme extension (top bar stays stock)"
+  fi
+  rm -rf "$tmp"
+fi
+gnome-extensions enable "$UT" 2>/dev/null || true
+# Schema lives inside the extension dir, so write the key with dconf.
+dconf write /org/gnome/shell/extensions/user-theme/name "'Flexoki'"
+
 # --- Wallpaper / lock screen from the shared hypr assets ---------------------
 log "Setting wallpaper and lock screen"
 gsettings set org.gnome.desktop.background picture-uri "file://$ASSETS/wallpaper.jpg"

@@ -1,0 +1,69 @@
+/* Flexoki for GNOME Shell (top bar, popups, overview, OSD). Loaded via the
+   user-theme extension (gsettings org.gnome.shell.extensions.user-theme
+   name = Flexoki). Imports the stock theme and recolours it to match the
+   waybar bar: #1c1b1a chrome, paper text, one blue accent, opaque. */
+@import url("resource:///org/gnome/shell/theme/gnome-shell.css");
+
+/* --- top bar (waybar stand-in) ----------------------------------------- */
+#panel {
+    background-color: #1c1b1a;
+    color: #cecdc3;
+    font-family: "JetBrainsMono Nerd Font";
+    font-weight: normal;
+    box-shadow: inset 0 -2px 0 rgba(102, 160, 200, 0.25);
+}
+#panel .panel-button { color: #cecdc3; }
+#panel .panel-button:hover,
+#panel .panel-button:active,
+#panel .panel-button:overview,
+#panel .panel-button:focus,
+#panel .panel-button:checked {
+    color: #66a0c8;
+    background-color: rgba(102, 160, 200, 0.15);
+    box-shadow: inset 0 -2px 0 #66a0c8;
+}
+#panel .panel-status-indicators-box,
+#panel .panel-status-menu-box { color: #cecdc3; }
+#panel.unlock-screen, #panel.login-screen, #panel:overview { background-color: #1c1b1a; }
+
+/* --- menus / popups ---------------------------------------------------- */
+.popup-menu-boxpointer, .candidate-popup-boxpointer {
+    -arrow-background-color: #1c1b1a;
+    -arrow-border-color: #403e3c;
+}
+.popup-menu { color: #cecdc3; }
+.popup-menu-content { background-color: #1c1b1a; border: 1px solid #403e3c; border-radius: 8px; }
+.popup-menu-item { color: #cecdc3; }
+.popup-menu-item:hover, .popup-menu-item:focus, .popup-menu-item:active,
+.popup-menu-item:checked { background-color: rgba(102, 160, 200, 0.15); color: #66a0c8; }
+.popup-menu-item:insensitive { color: #575653; }
+.popup-separator-menu-item .popup-separator-menu-item-separator { background-color: #403e3c; }
+.quick-toggle:checked, .toggle-switch:checked { background-color: #66a0c8; }
+.slider { -slider-active-background-color: #66a0c8; -slider-handle-border-color: #403e3c; }
+
+/* --- calendar / notifications ----------------------------------------- */
+.calendar, .datemenu-displays-section, .message-list, .message {
+    background-color: #1c1b1a; color: #cecdc3;
+}
+.message { border: 1px solid #403e3c; border-radius: 8px; }
+.calendar .calendar-today { background-color: #66a0c8; color: #100f0f; }
+.calendar-day-heading, .calendar-month-label { color: #878580; }
+
+/* --- overview / search / dash ------------------------------------------ */
+#overview, .overview-controls { background-color: transparent; }
+.search-entry { background-color: #282726; color: #cecdc3; border: 2px solid #403e3c; border-radius: 8px; }
+.search-entry:focus { border-color: #66a0c8; }
+#dash { background-color: rgba(28, 27, 26, 0.9); border: 1px solid #403e3c; }
+.app-well-app:hover .overview-icon, .app-well-app:focus .overview-icon,
+.app-well-app:selected .overview-icon { background-color: rgba(102, 160, 200, 0.15); }
+.workspace-thumbnail-indicator { border: 2px solid #66a0c8; }
+.search-section-content { background-color: #1c1b1a; border: 1px solid #403e3c; border-radius: 8px; }
+
+/* --- OSD / dialogs (volume popup, run dialog, modal) -------------------- */
+.osd-window, .modal-dialog, .run-dialog {
+    background-color: #1c1b1a; color: #cecdc3; border: 1px solid #403e3c; border-radius: 12px;
+}
+.modal-dialog-linked-button { color: #cecdc3; background-color: #282726; }
+.modal-dialog-linked-button:hover, .modal-dialog-linked-button:focus { background-color: #343331; }
+.modal-dialog-linked-button:default { background-color: #66a0c8; color: #100f0f; }
+.level-bar { -barlevel-active-background-color: #66a0c8; -barlevel-background-color: #403e3c; }

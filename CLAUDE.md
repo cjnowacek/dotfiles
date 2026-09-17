@@ -175,6 +175,13 @@ old Mesa), and Maya targets GNOME anyway, so the VM keeps GNOME and gets
   Nerd Font for UI/mono, the hypr `assets/wallpaper.jpg` + `lockscreen.png`,
   disables the Rocky background logo, and writes kitty.conf's palette into
   the default GNOME Terminal profile.
+- The top bar is themed too: `gtk/.local/share/themes/Flexoki/gnome-shell/
+  gnome-shell.css` imports the stock shell CSS and recolours panel, popups,
+  overview and OSD. It loads through the user-theme extension, which
+  `apply.sh` installs per-user from extensions.gnome.org (the RPM needs root)
+  and selects with `dconf write .../user-theme/name`. GNOME Shell only scans
+  the user extension dir at login, so a first install needs a relogin, or
+  the shell's own D-Bus `InstallRemoteExtension` call to load it live.
 - kitty is the default terminal there too: `apply.sh` sets
   `default-applications.terminal`, binds Super+Return (same as hyprland.conf)
   and Ctrl+Alt+T to kitty, and puts kitty first in the dash favourites.
