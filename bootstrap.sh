@@ -267,6 +267,28 @@ install_rclone() {
   rm -rf "$tmp"
 }
 
+install_btop() {
+  log_step "Installing btop"
+  if command -v btop &>/dev/null; then
+    log "btop already installed"
+    return 0
+  fi
+  [[ "$(uname -m)" == "x86_64" ]] || { log_error "No btop release fallback for $(uname -m)"; return 0; }
+  local tmp
+  tmp=$(mktemp -d)
+  if curl -fsSL -o "$tmp/btop.tgz" \
+      https://github.com/aristocratos/btop/releases/latest/download/btop-x86_64-unknown-linux-musl.tar.gz \
+    && tar -xzf "$tmp/btop.tgz" -C "$tmp"; then
+    mkdir -p "$HOME/.local/bin"
+    cp "$tmp/btop/bin/btop" "$HOME/.local/bin/btop"
+    chmod 755 "$HOME/.local/bin/btop"
+    log "btop installed to ~/.local/bin"
+  else
+    log_error "Could not download btop"
+  fi
+  rm -rf "$tmp"
+}
+
 # Install Oh My Zsh
 install_oh_my_zsh() {
   log_step "Installing Oh My Zsh"
@@ -1031,6 +1053,7 @@ main() {
   install_nerd_font
   install_yazi
   install_rclone
+  install_btop
   setup_bash_tools
   install_rust
   install_nodejs

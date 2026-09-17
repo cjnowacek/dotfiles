@@ -194,7 +194,7 @@ old Mesa), and Maya targets GNOME anyway, so the VM keeps GNOME and gets
   icon, an Unmount action) stands in for the waybar module. rclone comes from
   EPEL (`sudo dnf install rclone`); the `dropbox:` remote token is copied from
   the desktop's `~/.config/rclone/rclone.conf` or made with `rclone config`.
-- `install_yazi` / `install_rclone` (bootstrap.sh) drop the upstream x86_64
+- `install_yazi` / `install_rclone` / `install_btop` (bootstrap.sh) drop the upstream x86_64
   release binaries into `~/.local/bin` when the package manager left them
   out (yazi is in no EL9 repo; rclone is EPEL but the VM had no sudo). The
   rclone unit's `ExecStart` is resolved from `command -v rclone` for that
