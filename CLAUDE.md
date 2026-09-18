@@ -23,6 +23,7 @@ dotfiles/
 ├── gtk/.local/share/themes/Flexoki/ → ~/.local/share/themes/Flexoki  (GTK3 theme, GNOME host)
 ├── gnome/apply.sh        (gsettings skin for the GNOME host; run by setup_gnome)
 ├── maya/scripts/userSetup.py → ~/maya/<ver>/scripts/userSetup.py  (starts the maya-mcp bridge, port 7777)
+├── claude/.claude/machines/<name>/CLAUDE.md → ~/.claude/CLAUDE.md  (per-computer Claude Code notes, see below)
 ├── applications/.local/share/applications/*.desktop → ~/.local/share/applications/  (linked per file)
 ├── obsidian/.obsidian/   → <vault>/.obsidian   (each vault; both OSes)
 ├── unix/.unix_aliases    (sourced by both .bashrc and .zshrc)
@@ -77,6 +78,29 @@ layout:** the pull creates tracked `waybar/config.jsonc`, `waybar/style.css`,
 untracked per-host symlinks — if git refuses the pull over those four paths,
 delete the symlinks and pull again, then run `./bootstrap.sh links` (it also
 cleans any stale ones and links `host.jsonc`).
+
+## Per-computer Claude Code notes (`claude/`)
+
+`~/.claude/CLAUDE.md` is loaded into every Claude Code session on a machine, so
+it is where hardware-specific troubleshooting lives (failed-suspend diagnosis,
+the DP-1 `dp-relink` fix, ...). It is tracked per **computer**, not per host
+role: `claude/.claude/machines/<name>/CLAUDE.md`, linked by `setup_claude_notes`
+(part of `./bootstrap.sh links`). Role is too coarse here — the Rocky VM also
+detects as "desktop" and must not inherit the RTX 3080 box's notes.
+
+- `<name>` comes from `detect_machine`: `DOTFILES_MACHINE=<name>`, else the
+  untracked `~/.config/dotfiles/machine` (one line), else `uname -n`. The
+  marker file exists because the Arch installs never set a hostname and all
+  report `archlinux`. Known machines: `puget-desktop` (dual Dell 4K, RTX 3080).
+- Only that one file is linked. `~/.claude` itself holds credentials, session
+  history and auto-memory and stays a real, untracked directory.
+- Because it is a symlink, anything Claude appends to `~/.claude/CLAUDE.md`
+  shows up as a diff here — commit it like any other change.
+- A machine with no `machines/<name>/` dir is left alone (bootstrap logs how to
+  adopt it). To add one: `echo <name> > ~/.config/dotfiles/machine`, move its
+  notes to `claude/.claude/machines/<name>/CLAUDE.md`, run `./bootstrap.sh links`.
+  `./bootstrap.sh doctor` reports a wrong or missing link.
+- The repo is public: keep these notes to hardware/config facts, no secrets.
 
 ## First pull on the desktop after the hosts/ restructure (2026-08-30)
 

@@ -18,6 +18,23 @@ detect_host_role() {
   fi
 }
 
+# Machine name: picks which claude/.claude/machines/<name>/ notes get linked.
+# Deliberately finer than HOST_ROLE: those notes describe one physical computer
+# (its GPU, disks, monitors), and the Rocky VM also detects as "desktop".
+# DOTFILES_MACHINE wins, then the untracked ~/.config/dotfiles/machine, then the
+# hostname — which is last because the Arch installs never set one and all
+# report "archlinux".
+MACHINE_FILE="$HOME/.config/dotfiles/machine"
+detect_machine() {
+  if [[ -n "${DOTFILES_MACHINE:-}" ]]; then
+    MACHINE="$DOTFILES_MACHINE"
+  elif [[ -s "$MACHINE_FILE" ]]; then
+    MACHINE=$(tr -d '[:space:]' <"$MACHINE_FILE")
+  else
+    MACHINE=$(uname -n)
+  fi
+}
+
 # Helper functions
 log() {
   echo ":: $1"
@@ -462,6 +479,23 @@ setup_dunst() {
   create_symlink "$DOTFILES_DIR/dunst/.config/dunst" "$HOME/.config/dunst"
   command -v dunstctl >/dev/null && dunstctl reload 2>/dev/null
   log "dunst configuration linked"
+}
+
+# Setup Claude Code machine notes (~/.claude/CLAUDE.md, loaded into every
+# session on that computer). Linked per file: ~/.claude itself holds
+# credentials and session history and must stay a real, untracked directory.
+# Because it is a symlink, notes Claude appends land in the repo as a diff.
+setup_claude_notes() {
+  log_step "Setting up Claude Code machine notes"
+  local src="$DOTFILES_DIR/claude/.claude/machines/$MACHINE/CLAUDE.md"
+  if [[ -f "$src" ]]; then
+    create_symlink "$src" "$HOME/.claude/CLAUDE.md"
+    log "Claude notes linked (machine: $MACHINE)"
+  else
+    log "No Claude notes for machine '$MACHINE' — ~/.claude/CLAUDE.md left alone."
+    log "  To track this computer: echo <name> > $MACHINE_FILE, put the notes in"
+    log "  claude/.claude/machines/<name>/CLAUDE.md, then ./bootstrap.sh links"
+  fi
 }
 
 # Setup GTK theme (Flexoki) + gtk settings.ini. Linked per file so
@@ -1056,6 +1090,17 @@ doctor() {
     ok=false
   fi
 
+  log_step "Doctor: Claude machine notes (machine: $MACHINE)"
+  local notes="$DOTFILES_DIR/claude/.claude/machines/$MACHINE/CLAUDE.md"
+  if [[ ! -f "$notes" ]]; then
+    log "No tracked notes for '$MACHINE' (name this computer in $MACHINE_FILE to track them)"
+  elif [[ "$(readlink -f "$HOME/.claude/CLAUDE.md" 2>/dev/null)" != "$notes" ]]; then
+    log "WRONG/MISSING  ~/.claude/CLAUDE.md should link to $notes (run: ./bootstrap.sh links)"
+    ok=false
+  else
+    log "~/.claude/CLAUDE.md -> machines/$MACHINE"
+  fi
+
   log_step "Doctor: per-host links (role: $HOST_ROLE)"
   local f
   for f in host.conf hypridle.conf; do
@@ -1149,6 +1194,8 @@ main() {
 
   detect_host_role
   log "Host role: $HOST_ROLE (override with DOTFILES_HOST=desktop|laptop)"
+  detect_machine
+  log "Machine: $MACHINE (override with DOTFILES_MACHINE=<name> or $MACHINE_FILE)"
 
   # `./bootstrap.sh doctor` — read-only drift report, changes nothing.
   if [[ "${1:-}" == "doctor" ]]; then
@@ -1167,6 +1214,7 @@ main() {
     setup_kitty
     setup_dunst
     setup_gtk
+    setup_claude_notes
     return
   fi
 
@@ -1198,6 +1246,7 @@ main() {
   setup_kitty
   setup_dunst
   setup_gtk
+  setup_claude_notes
   setup_gnome
   setup_obsidian
   setup_python
