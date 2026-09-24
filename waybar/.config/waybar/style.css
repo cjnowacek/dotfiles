@@ -54,6 +54,7 @@ tooltip label {
 #memory,
 #battery,
 #custom-dropbox,
+#custom-vm,
 #tray {
     padding: 0 12px;
     border-radius: 4px;
@@ -64,7 +65,8 @@ tooltip label {
 #pulseaudio:hover,
 #cpu:hover,
 #memory:hover,
-#custom-dropbox:hover {
+#custom-dropbox:hover,
+#custom-vm:hover {
     background: rgba(102, 160, 200, 0.12);
 }
 
@@ -74,6 +76,18 @@ tooltip label {
 
 #custom-dropbox.unmounted {
     color: #e8705f;
+}
+
+#custom-vm.running {
+    color: #5abdac;
+}
+
+#custom-vm.paused {
+    color: #da702c;
+}
+
+#custom-vm.off {
+    color: #878580;
 }
 
 #battery {

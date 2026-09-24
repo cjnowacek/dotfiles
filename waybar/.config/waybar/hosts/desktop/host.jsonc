@@ -1,6 +1,6 @@
 {
     // Desktop: no battery; workspaces pinned to their outputs.
-    "modules-right": ["custom/dropbox", "tray", "pulseaudio", "network", "cpu", "memory"],
+    "modules-right": ["custom/vm", "custom/dropbox", "tray", "pulseaudio", "network", "cpu", "memory"],
 
     "hyprland/workspaces": {
         "format": "{name}",

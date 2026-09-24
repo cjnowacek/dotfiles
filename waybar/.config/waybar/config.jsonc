@@ -4,7 +4,7 @@
     // (a bootstrap-made symlink to hosts/<role>/host.jsonc). Keys defined
     // here win over the include, so keep those two OUT of this file.
     // Module definitions below are shared even when only one host lists
-    // them (battery, custom/dropbox) — unlisted modules are inert.
+    // them (battery, custom/dropbox, custom/vm) — unlisted modules are inert.
     "include": "$HOME/.config/waybar/host.jsonc",
 
     "layer": "top",
@@ -101,6 +101,14 @@
         "interval": 10,
         "on-click": "kitty -e yazi ~/Dropbox",
         "on-click-right": "systemctl --user restart rclone-dropbox.service"
+    },
+
+    "custom/vm": {
+        "exec": "~/.config/waybar/scripts/vm-status.sh rocky-maya",
+        "return-type": "json",
+        "interval": 5,
+        "on-click": "virsh -c qemu:///system domstate rocky-maya | grep -q running || virsh -c qemu:///system start rocky-maya; virt-manager --connect qemu:///system --show-domain-console rocky-maya",
+        "on-click-right": "virt-manager --connect qemu:///system"
     },
 
     "battery": {
