@@ -498,6 +498,25 @@ setup_claude_notes() {
   fi
 }
 
+# The subagent workflow kit: the routing rule Claude Code follows in every
+# project, and the global `implementer` agent. Cloned beside the other repos
+# in ~/dev, and the agent is linked into ~/.claude/agents, which loads at
+# session start — so editing the repo is editing the live copy. The routing
+# text itself is in this machine's CLAUDE.md (linked above) and points at
+# the kit. Needs the GitHub SSH key; without it the clone is skipped and
+# said, not failed on.
+setup_subagent_kit() {
+  local kit="$HOME/dev/subagent-workflow-kit"
+  if [[ ! -d "$kit/.git" ]]; then
+    log "Cloning the subagent workflow kit into $kit"
+    if ! git clone -q git@github.com:cjnowacek/subagent-workflow-kit.git "$kit"; then
+      log "Warning: could not clone the subagent kit (no GitHub SSH key yet?) - skipped"
+      return 0
+    fi
+  fi
+  create_symlink "$kit/agents/implementer.md" "$HOME/.claude/agents/implementer.md"
+}
+
 # Setup GTK theme (Flexoki) + gtk settings.ini. Linked per file so
 # ~/.config/gtk-3.0/bookmarks (nautilus) stays a real file.
 setup_gtk() {
@@ -1247,6 +1266,7 @@ main() {
   setup_dunst
   setup_gtk
   setup_claude_notes
+  setup_subagent_kit
   setup_gnome
   setup_obsidian
   setup_python

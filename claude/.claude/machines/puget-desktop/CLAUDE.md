@@ -57,3 +57,15 @@ marginal (host.conf already suspects a pre-DP1.4 cable): swap the cable or
 move to another DP port. Drop history lives in the user journal:
 `journalctl -b --user | grep 'hyprsunset.*Found new output'`. Events where
 both outputs vanish at once are just the monitors being switched off/on.
+
+## Subagents: triage every request, dispatch without asking
+
+The rule for which work the main session keeps and which it sends to a
+subagent is `~/dev/subagent-workflow-kit/templates/ROUTING.md`; a repo may
+carry its own `.claude/ROUTING.md`, which wins. Short version: questions,
+design, anything with a silent failure mode, the check, the gate, the look
+and every commit stay with the main session; a pinned-down change with a
+check goes to `implementer` (in `~/.claude/agents`, symlinked from the kit),
+a sweep across files to `Explore`. Say in one line what was sent and to
+whom; never wait for a veto. The user, 2026-09-24: "as you see fit for the
+type of task it is. and then ill just staying in fable."
