@@ -499,13 +499,15 @@ setup_claude_notes() {
 }
 
 # The subagent workflow kit: the routing rule Claude Code follows in every
-# project, and the global `implementer` agent. Cloned beside the other repos
-# in ~/dev, and the agent is linked into ~/.claude/agents, which loads at
-# session start — so editing the repo is editing the live copy. The routing
-# text itself is in this machine's CLAUDE.md (linked above) and points at
-# the kit. Needs the GitHub SSH key; without it the clone is skipped and
-# said, not failed on.
+# project, the global `implementer` agent, and the /adopt and /kickoff
+# commands. Cloned beside the other repos in ~/dev; the agent is linked into
+# ~/.claude/agents and the two skills into ~/.claude/skills, all of which
+# load at session start — so editing the repo is editing the live copy. The
+# routing text itself is in this machine's CLAUDE.md (linked above) and
+# points at the kit. Needs the GitHub SSH key; without it the clone is
+# skipped and said, not failed on. Part of `./bootstrap.sh links` too.
 setup_subagent_kit() {
+  log_step "Setting up the subagent workflow kit"
   local kit="$HOME/dev/subagent-workflow-kit"
   if [[ ! -d "$kit/.git" ]]; then
     log "Cloning the subagent workflow kit into $kit"
@@ -515,6 +517,10 @@ setup_subagent_kit() {
     fi
   fi
   create_symlink "$kit/agents/implementer.md" "$HOME/.claude/agents/implementer.md"
+  local s
+  for s in adopt kickoff; do
+    create_symlink "$kit/skills/$s" "$HOME/.claude/skills/$s"
+  done
 }
 
 # Setup GTK theme (Flexoki) + gtk settings.ini. Linked per file so
@@ -1120,6 +1126,23 @@ doctor() {
     log "~/.claude/CLAUDE.md -> machines/$MACHINE"
   fi
 
+  log_step "Doctor: subagent workflow kit"
+  local kit="$HOME/dev/subagent-workflow-kit"
+  if [[ ! -d "$kit/.git" ]]; then
+    log "MISSING  $kit (run: ./bootstrap.sh links)"
+    ok=false
+  else
+    local pair kit_ok=true
+    for pair in "agents/implementer.md:$HOME/.claude/agents/implementer.md" \
+      "skills/adopt:$HOME/.claude/skills/adopt" "skills/kickoff:$HOME/.claude/skills/kickoff"; do
+      if [[ "$(readlink -f "${pair#*:}" 2>/dev/null)" != "$kit/${pair%%:*}" ]]; then
+        log "WRONG/MISSING  ${pair#*:} should link to kit/${pair%%:*} (run: ./bootstrap.sh links)"
+        ok=false; kit_ok=false
+      fi
+    done
+    $kit_ok && log "agent and /adopt, /kickoff linked from $kit"
+  fi
+
   log_step "Doctor: per-host links (role: $HOST_ROLE)"
   local f
   for f in host.conf hypridle.conf; do
@@ -1234,6 +1257,7 @@ main() {
     setup_dunst
     setup_gtk
     setup_claude_notes
+    setup_subagent_kit
     return
   fi
 

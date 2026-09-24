@@ -24,6 +24,7 @@ dotfiles/
 ├── gnome/apply.sh        (gsettings skin for the GNOME host; run by setup_gnome)
 ├── maya/scripts/userSetup.py → ~/maya/<ver>/scripts/userSetup.py  (starts the maya-mcp bridge, port 7777)
 ├── claude/.claude/machines/<name>/CLAUDE.md → ~/.claude/CLAUDE.md  (per-computer Claude Code notes, see below)
+│   (~/.claude/agents/implementer.md and ~/.claude/skills/{adopt,kickoff} link to ~/dev/subagent-workflow-kit, not here)
 ├── applications/.local/share/applications/*.desktop → ~/.local/share/applications/  (linked per file)
 ├── obsidian/.obsidian/   → <vault>/.obsidian   (each vault; both OSes)
 ├── unix/.unix_aliases    (sourced by both .bashrc and .zshrc)
@@ -101,6 +102,19 @@ detects as "desktop" and must not inherit the RTX 3080 box's notes.
   notes to `claude/.claude/machines/<name>/CLAUDE.md`, run `./bootstrap.sh links`.
   `./bootstrap.sh doctor` reports a wrong or missing link.
 - The repo is public: keep these notes to hardware/config facts, no secrets.
+- Never `sed -i` the linked file: sed writes a new file over the link and the
+  repo copy stops being live. Edit through the link, then commit here.
+
+## The subagent workflow kit (`~/dev/subagent-workflow-kit`)
+
+Not in this repo; `setup_subagent_kit` (in the full run and in `links`)
+clones `cjnowacek/subagent-workflow-kit` into `~/dev` and links its
+`agents/implementer.md` into `~/.claude/agents/` and its `skills/adopt`,
+`skills/kickoff` into `~/.claude/skills/`, so every project has the
+`implementer` subagent and the `/adopt`, `/kickoff` commands. The machine
+notes above point at the kit's `templates/ROUTING.md` for what the main
+session keeps and what it sends away. `./bootstrap.sh doctor` checks the
+three links. Changing the kit is done in its own repo.
 
 ## First pull on the desktop after the hosts/ restructure (2026-08-30)
 
