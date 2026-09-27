@@ -30,7 +30,7 @@ dotfiles/
 ├── unix/.unix_aliases    (sourced by both .bashrc and .zshrc)
 ├── bootstrap.sh          (full system setup script; OS-agnostic steps + dispatch)
 ├── bootstrap.d/<pm>.sh   (one file per package manager: pacman, apt, dnf, brew)
-├── bootstrap.ps1         (Windows setup: nvim + PowerShell profile + Obsidian)
+├── bootstrap.ps1         (Windows setup: nvim + profile + Obsidian + subagent kit + Claude notes; -Links = links only)
 ├── powershell/Microsoft.PowerShell_profile.ps1   (Windows alias equivalent)
 └── emacs/                (unused)
 ```
@@ -101,6 +101,11 @@ detects as "desktop" and must not inherit the RTX 3080 box's notes.
   adopt it). To add one: `echo <name> > ~/.config/dotfiles/machine`, move its
   notes to `claude/.claude/machines/<name>/CLAUDE.md`, run `./bootstrap.sh links`.
   `./bootstrap.sh doctor` reports a wrong or missing link.
+- Windows: `bootstrap.ps1` does the same (`-Machine <name>`, else the same
+  marker file, else the hostname in lower case) with a file symlink, which
+  needs Developer Mode; without it the notes are copied and appends made
+  through the copy do not reach the repo. Known Windows machine:
+  `desktop-qe7h7tn` (Windows 11, `C:\dev`).
 - The repo is public: keep these notes to hardware/config facts, no secrets.
 - Never `sed -i` the linked file: sed writes a new file over the link and the
   repo copy stops being live. Edit through the link, then commit here.
@@ -115,6 +120,14 @@ clones `cjnowacek/subagent-workflow-kit` into `~/dev` and links its
 notes above point at the kit's `templates/ROUTING.md` for what the main
 session keeps and what it sends away. `./bootstrap.sh doctor` checks the
 three links. Changing the kit is done in its own repo.
+
+On Windows, `bootstrap.ps1` (step 4, also under `-Links`) clones the kit into
+`C:\dev\subagent-workflow-kit` and makes `%USERPROFILE%\dev\subagent-workflow-kit`
+a junction to it, because the kit's hook command, skills and ROUTING.md all
+say `~/dev/subagent-workflow-kit` and Git Bash (which runs Claude Code's hooks
+there) resolves `~` to the Windows home. The two skills are junctions into
+`~\.claude\skills\`; `implementer.md` is a file symlink (Developer Mode) or,
+failing that, a copy that the next `-Links` run refreshes.
 
 ## First pull on the desktop after the hosts/ restructure (2026-08-30)
 
@@ -310,9 +323,12 @@ clone (e.g. `C:\dev\dotfiles`) for the Windows-native pieces. Same repo/history;
   dot-sources `powershell/Microsoft.PowerShell_profile.ps1`, junctions
   `obsidian/.obsidian` into each vault (Windows counterpart of `setup_obsidian()` in
   `bootstrap.sh`; vault list defaults to `C:\dev\zettelpara` and `C:\dev\ai-chats`,
-  override with `-Vaults`, missing vaults are skipped), and clones/updates repos into
+  override with `-Vaults`, missing vaults are skipped), links the subagent workflow kit and
+  the per-computer Claude notes (see those sections), and clones/updates repos into
   `C:\dev` over SSH (bash, mcp-chat-logger always; zettelpara, ai-chats behind y/N prompts),
-  mirroring `bootstrap.sh`'s repo setup.
+  mirroring `bootstrap.sh`'s repo setup. `bootstrap.ps1 -Links` is the Windows
+  `./bootstrap.sh links`: steps 1-5 (nvim, profile, Obsidian, kit, notes) and nothing
+  else, so it runs unattended.
 - `bootstrap.ps1` also winget-installs the native tools the config assumes (neovim, git,
   ripgrep, fd, eza, zig, Claude Code) via `Install-Pkg`, which skips anything already on PATH
   and warns instead of aborting on failure. Rough counterpart of `install_dependencies()` +
@@ -324,9 +340,11 @@ clone (e.g. `C:\dev\dotfiles`) for the Windows-native pieces. Same repo/history;
   treats as a string delimiter, and the whole script fails to parse.
 - `powershell/Microsoft.PowerShell_profile.ps1`: Windows equivalent of `unix/.unix_aliases`;
   keep the two in rough sync when adding aliases.
-- **No admin / Developer Mode required.** Directory junctions and the profile stub both work
-  for a plain user, entirely under the Windows user home (`%LOCALAPPDATA%`, `%USERPROFILE%`),
-  and edits flow through on `git pull`. Good for locked-down work machines.
+- **No admin required.** Directory junctions and the profile stub both work for a plain user,
+  entirely under the Windows user home (`%LOCALAPPDATA%`, `%USERPROFILE%`), and edits flow
+  through on `git pull`. Good for locked-down work machines. The only exceptions are the two
+  single-file links (`Link-File`: the kit's `implementer.md`, the machine notes), which are
+  symlinks and need Developer Mode; without it they fall back to copies.
 - **nvim**, the **aliases**, and the **Obsidian config** are shared. `hypr/`, `bootstrap.sh`,
   `waybar/`, and the oh-my-zsh setup are Linux-only, no Windows counterpart.
 - Obsidian plugin code (`plugins/*/main.js`, `manifest.json`, `themes/`) is gitignored by

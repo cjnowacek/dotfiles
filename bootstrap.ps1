@@ -10,6 +10,10 @@
       - Neovim config  -> %LOCALAPPDATA%\nvim   (directory junction)
       - PowerShell profile: a stub at $PROFILE that dot-sources the repo profile
       - Obsidian config -> <vault>\.obsidian    (directory junction, per vault)
+      - Subagent workflow kit: C:\dev\subagent-workflow-kit cloned, reachable
+        as ~\dev\subagent-workflow-kit (junction), its implementer agent and
+        /adopt, /kickoff skills linked into ~\.claude (setup_subagent_kit)
+      - Claude Code machine notes -> ~\.claude\CLAUDE.md (setup_claude_notes)
       - Repos: clones/updates CJ's repos into C:\dev over SSH
         (mirrors bootstrap.sh's repo setup on the Linux side)
 
@@ -18,11 +22,14 @@
     Anything already on PATH is skipped, and a failed install warns rather
     than aborts.
 
-    Windows counterpart of setup_obsidian() in bootstrap.sh. Pass -Vaults to
-    override the default vault list.
+    -Links redoes only the links (the Windows `./bootstrap.sh links`): no
+    installs, no repo prompts, so it runs unattended. -Vaults overrides the
+    Obsidian vault list; -Machine picks the Claude notes.
 
-    NO ADMIN OR DEVELOPER MODE REQUIRED. Directory junctions and the profile
-    stub both work for a plain user; edits still flow through on `git pull`.
+    NO ADMIN REQUIRED. Directory junctions and the profile stub work for a
+    plain user; edits still flow through on `git pull`. The two FILE links
+    (the kit's implementer.md, the machine notes) are symlinks and need
+    Developer Mode; without it they become copies that the next run refreshes.
     Everything it touches lives under your Windows user home (%LOCALAPPDATA%,
     %USERPROFILE%). Idempotent: re-running is safe and backs up real files it
     replaces. (On a truly locked box where even junctions are blocked, the
@@ -32,7 +39,12 @@
 param(
     # Vaults to link the Obsidian config into. Windows equivalent of the
     # vaults list in bootstrap.sh's setup_obsidian(). Missing ones are skipped.
-    [string[]]$Vaults = @('C:\dev\zettelpara', 'C:\dev\ai-chats')
+    [string[]]$Vaults = @('C:\dev\zettelpara', 'C:\dev\ai-chats'),
+    # Only redo the links (steps 1-5); skip every install and prompt.
+    [switch]$Links,
+    # Which claude\.claude\machines\<name>\CLAUDE.md to link. Default: the
+    # untracked ~\.config\dotfiles\machine, else the hostname in lower case.
+    [string]$Machine
 )
 
 $ErrorActionPreference = 'Stop'
@@ -43,6 +55,8 @@ function Write-Info($m) { Write-Host ":: $m" }
 
 # Link a directory via junction (works without admin / Developer Mode).
 function Link-Dir([string]$Target, [string]$Link) {
+    $parent = Split-Path -Parent $Link
+    if (-not (Test-Path $parent)) { New-Item -ItemType Directory -Path $parent -Force | Out-Null }
     if (Test-Path $Link) {
         $item = Get-Item $Link -Force
         if ($item.LinkType) {
@@ -63,6 +77,34 @@ function Link-Dir([string]$Target, [string]$Link) {
         # Junctions need no admin, but on a truly locked box fall back to a copy.
         Write-Info "Junction failed - copied instead (won't live-update): $Link"
         Copy-Item $Target $Link -Recurse -Force
+    }
+}
+
+# Link a single file. A file cannot be junctioned: this is a symlink, which a
+# plain user may create only with Developer Mode on. When that fails, copy the
+# file instead and say so; re-running bootstrap refreshes the copy, but edits
+# made through the copy do not reach the repo.
+function Link-File([string]$Target, [string]$Link) {
+    $parent = Split-Path -Parent $Link
+    if (-not (Test-Path $parent)) { New-Item -ItemType Directory -Path $parent -Force | Out-Null }
+    if (Test-Path $Link) {
+        $item = Get-Item $Link -Force
+        if ($item.LinkType) {
+            Remove-Item $Link -Force      # a file link: removes the link only
+        } elseif ((Get-FileHash $Link).Hash -eq (Get-FileHash $Target).Hash) {
+            Remove-Item $Link -Force      # an earlier copy fallback, unchanged
+        } else {
+            $backup = "$Link.bak-$(Get-Date -Format yyyyMMdd-HHmmss)"
+            Write-Info "Backing up existing $Link -> $backup"
+            Move-Item $Link $backup
+        }
+    }
+    try {
+        New-Item -ItemType SymbolicLink -Path $Link -Target $Target -ErrorAction Stop | Out-Null
+        Write-Info "Linked (symlink): $Link -> $Target"
+    } catch {
+        Copy-Item $Target $Link -Force
+        Write-Info "Symlink failed (Developer Mode off?) - copied instead; re-run bootstrap.ps1 -Links after the source changes: $Link"
     }
 }
 
@@ -108,6 +150,31 @@ function Install-Pkg([string]$Cmd, [string]$Id, [string]$Why) {
                     [Environment]::GetEnvironmentVariable('Path', 'User')
     } catch {
         Write-Info "install failed for ${Id}: $($_.Exception.Message)"
+    }
+}
+
+# Windows repos live in C:\dev (bootstrap.sh's ~/dev).
+$DevDir = 'C:\dev'
+
+# Check we can reach a repo (e.g. private repos need SSH access).
+function Test-RepoAccess([string]$Url) {
+    $old = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'   # PS5.1 throws on redirected native stderr under 'Stop'
+    git ls-remote $Url 2>&1 | Out-Null
+    $ok = ($LASTEXITCODE -eq 0)
+    $ErrorActionPreference = $old
+    return $ok
+}
+
+# Clone if missing, pull if already there.
+function Get-Repo([string]$Url, [string]$Dest) {
+    if (Test-Path (Join-Path $Dest '.git')) {
+        Write-Info "Updating $Dest"
+        git -C $Dest pull --rebase
+    } elseif (Test-RepoAccess $Url) {
+        git clone $Url $Dest
+    } else {
+        Write-Info "Warning: no access to $Url (private repo / no SSH key?) - skipping"
     }
 }
 
@@ -160,31 +227,67 @@ if (Test-Path $obsidianTarget) {
     Write-Info "Warning: obsidian config not found at $obsidianTarget"
 }
 
-# 4. Repos (mirrors bootstrap.sh's repo setup; Windows repos live in C:\dev)
-$DevDir = 'C:\dev'
-
-# Check we can reach a repo (e.g. private repos need SSH access).
-function Test-RepoAccess([string]$Url) {
-    $old = $ErrorActionPreference
-    $ErrorActionPreference = 'Continue'   # PS5.1 throws on redirected native stderr under 'Stop'
-    git ls-remote $Url 2>&1 | Out-Null
-    $ok = ($LASTEXITCODE -eq 0)
-    $ErrorActionPreference = $old
-    return $ok
-}
-
-# Clone if missing, pull if already there.
-function Get-Repo([string]$Url, [string]$Dest) {
-    if (Test-Path (Join-Path $Dest '.git')) {
-        Write-Info "Updating $Dest"
-        git -C $Dest pull --rebase
-    } elseif (Test-RepoAccess $Url) {
-        git clone $Url $Dest
+# 4. Subagent workflow kit (Windows counterpart of setup_subagent_kit in
+# bootstrap.sh). The kit addresses itself as ~/dev/subagent-workflow-kit: in
+# the implementer's hook command, in the /adopt and /kickoff skills and in
+# ROUTING.md. Git Bash, which runs Claude Code's hooks and skill shell lines
+# on Windows, resolves ~ to %USERPROFILE%. So the clone lives in C:\dev like
+# every other repo, and %USERPROFILE%\dev\subagent-workflow-kit is a junction
+# to it: every path in the kit works unchanged on both OSes. The agent file
+# is a symlink (Link-File; a file cannot be junctioned), the two skills are
+# directories and get junctions. Agent and skill definitions load at session
+# start, so a running Claude Code session sees them after a restart.
+Write-Step "Subagent workflow kit"
+$kitDir = Join-Path $DevDir 'subagent-workflow-kit'
+if (-not (Test-Path (Join-Path $kitDir '.git'))) {
+    if (Get-Command git -ErrorAction SilentlyContinue) {
+        Get-Repo 'git@github.com:cjnowacek/subagent-workflow-kit.git' $kitDir
     } else {
-        Write-Info "Warning: no access to $Url (private repo / no SSH key?) - skipping"
+        Write-Info "git not found - cannot clone the kit"
     }
 }
+if (Test-Path (Join-Path $kitDir '.git')) {
+    $claudeDir = Join-Path $HOME '.claude'
+    Link-Dir  $kitDir (Join-Path $HOME 'dev\subagent-workflow-kit')
+    Link-File (Join-Path $kitDir 'agents\implementer.md') (Join-Path $claudeDir 'agents\implementer.md')
+    foreach ($s in 'adopt', 'kickoff') {
+        Link-Dir (Join-Path $kitDir "skills\$s") (Join-Path $claudeDir "skills\$s")
+    }
+    Write-Info "implementer agent and /adopt, /kickoff linked (new Claude Code sessions only)"
+} else {
+    Write-Info "kit not present at $kitDir - skipped"
+}
 
+# 5. Claude Code machine notes (Windows counterpart of setup_claude_notes in
+# bootstrap.sh): claude\.claude\machines\<name>\CLAUDE.md -> ~\.claude\CLAUDE.md,
+# loaded into every Claude Code session on this computer. <name> is -Machine,
+# else the untracked ~\.config\dotfiles\machine (one line), else the hostname
+# in lower case. A computer with no machines\<name>\ dir is left alone.
+Write-Step "Claude Code machine notes"
+if (-not $Machine) {
+    $machineFile = Join-Path $HOME '.config\dotfiles\machine'
+    if (Test-Path $machineFile) {
+        $Machine = (Get-Content $machineFile -Raw).Trim()
+    } else {
+        $Machine = $env:COMPUTERNAME.ToLower()
+    }
+}
+$notes = Join-Path $RepoDir "claude\.claude\machines\$Machine\CLAUDE.md"
+if (Test-Path $notes) {
+    Link-File $notes (Join-Path $HOME '.claude\CLAUDE.md')
+    Write-Info "Claude notes linked (machine: $Machine)"
+} else {
+    Write-Info "No Claude notes for machine '$Machine' - ~\.claude\CLAUDE.md left alone."
+    Write-Info "  To adopt this computer: write claude\.claude\machines\$Machine\CLAUDE.md, then run bootstrap.ps1 -Links"
+}
+
+if ($Links) {
+    Write-Step "Done (links only)"
+    Write-Info "Restart Claude Code sessions to pick up the agent and skills."
+    return
+}
+
+# 6. Repos (mirrors bootstrap.sh's repo setup)
 Write-Step "Repos ($DevDir)"
 if (Get-Command git -ErrorAction SilentlyContinue) {
     if (-not (Test-Path $DevDir)) { New-Item -ItemType Directory -Path $DevDir -Force | Out-Null }
@@ -202,7 +305,7 @@ if (Get-Command git -ErrorAction SilentlyContinue) {
     Write-Info "git not found - skipping repo setup"
 }
 
-# 5. Claude Code CLI (native install; the nvim claudecode plugin shells out to it)
+# 7. Claude Code CLI (native install; the nvim claudecode plugin shells out to it)
 Write-Step "Claude Code"
 if (Get-Command claude -ErrorAction SilentlyContinue) {
     Write-Info "claude already installed: $(claude --version)"
@@ -216,7 +319,7 @@ if (Get-Command claude -ErrorAction SilentlyContinue) {
     }
 }
 
-# 6. Native tools the nvim config and the aliases assume
+# 8. Native tools the nvim config and the aliases assume
 Write-Step "Native tools"
 Install-Pkg 'nvim' 'Neovim.Neovim'            'the editor itself'
 Install-Pkg 'git'  'Git.Git'                  'plugin fetching, and a real Bash for Claude Code'
@@ -230,7 +333,7 @@ Install-Pkg 'yazi' 'sxyazi.yazi'              'file manager, same y muscle memor
 # and needs no Visual Studio install.
 Install-Pkg 'gcc'  'BrechtSanders.WinLibs.POSIX.UCRT' 'nvim-treesitter parser compilation'
 
-# 7. zk CLI (not on winget; fetch the latest GitHub release binary).
+# 9. zk CLI (not on winget; fetch the latest GitHub release binary).
 # The PowerShell profile sets ZK_NOTEBOOK_DIR, and the vault's CLAUDE.md
 # documents the zk d/l/w workflow -- this makes that work on Windows too.
 Write-Step "zk"
