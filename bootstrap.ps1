@@ -294,7 +294,7 @@ if (Get-Command git -ErrorAction SilentlyContinue) {
     Get-Repo 'git@github.com:cjnowacek/bash.git' (Join-Path $DevDir 'bash')
     Get-Repo 'git@github.com:cjnowacek/mcp-chat-logger.git' (Join-Path $DevDir 'mcp-chat-logger')
     foreach ($name in 'zettelpara', 'ai-chats') {
-        $answer = Read-Host ":: Clone $name? [y/N]"
+        $answer = Read-Host ":: Clone ${name}? [y/N]"
         if ($answer -match '^[Yy]$') {
             Get-Repo "git@github.com:cjnowacek/$name.git" (Join-Path $DevDir $name)
         } else {
