@@ -496,6 +496,12 @@ setup_claude_notes() {
     log "  To track this computer: echo <name> > $MACHINE_FILE, put the notes in"
     log "  claude/.claude/machines/<name>/CLAUDE.md, then ./bootstrap.sh links"
   fi
+  # Personal slash commands (e.g. /learn), shared by every machine.
+  local s
+  for s in "$DOTFILES_DIR"/claude/.claude/skills/*/; do
+    [[ -d "$s" ]] || continue
+    create_symlink "${s%/}" "$HOME/.claude/skills/$(basename "$s")"
+  done
 }
 
 # The subagent workflow kit: the routing rule Claude Code follows in every
