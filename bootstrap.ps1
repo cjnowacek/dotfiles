@@ -14,6 +14,7 @@
         as ~\dev\subagent-workflow-kit (junction), its implementer agent and
         /adopt, /kickoff skills linked into ~\.claude (setup_subagent_kit)
       - Claude Code machine notes -> ~\.claude\CLAUDE.md (setup_claude_notes)
+      - Personal Claude skills (/learn) -> ~\.claude\skills (junctions)
       - Repos: clones/updates CJ's repos into C:\dev over SSH
         (mirrors bootstrap.sh's repo setup on the Linux side)
 
@@ -279,6 +280,12 @@ if (Test-Path $notes) {
 } else {
     Write-Info "No Claude notes for machine '$Machine' - ~\.claude\CLAUDE.md left alone."
     Write-Info "  To adopt this computer: write claude\.claude\machines\$Machine\CLAUDE.md, then run bootstrap.ps1 -Links"
+}
+
+# Personal slash commands (e.g. /learn), shared by every machine: each
+# claude\.claude\skills\<name>\ gets a junction in ~\.claude\skills.
+Get-ChildItem (Join-Path $RepoDir 'claude\.claude\skills') -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+    Link-Dir $_.FullName (Join-Path $HOME ".claude\skills\$($_.Name)")
 }
 
 if ($Links) {
