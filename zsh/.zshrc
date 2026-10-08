@@ -108,6 +108,8 @@ export PATH="$HOME/.cargo/bin:$PATH"
 
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
+export EDITOR=nvim
+export VISUAL=nvim
 # Created by `pipx` on 2025-10-29 22:34:23
 
 # start agent for git
