@@ -1,0 +1,15 @@
+[Desktop Entry]
+Type=Application
+Name=Discord
+GenericName=Internet Messenger
+Comment=All-in-one voice and text chat for gamers
+# Overrides /usr/share/applications/discord.desktop. The script runs the official
+# client (extra `discord`, bootstrapped into ~/.config/discord) on XWayland: native
+# Wayland + NVIDIA kills the GPU process, and the AUR system-Electron build cannot
+# display other people's streams. Details in hypr/.config/hypr/scripts/discord-launch.sh.
+Exec=/home/seejay/.config/hypr/scripts/discord-launch.sh --url -- %u
+Icon=discord
+Terminal=false
+Categories=Network;InstantMessaging;
+MimeType=x-scheme-handler/discord;
+StartupWMClass=discord
