@@ -47,13 +47,28 @@ dp-relink            # default DP-1; `dp-relink HDMI-A-1` for the other panel
 - Script: `~/.dotfiles/hypr/.config/hypr/scripts/dp-relink.sh`
   (= `~/.config/hypr/scripts/dp-relink.sh`, symlinked to `~/.local/bin/dp-relink`)
 - Keybind: `SUPER+SHIFT+M`, defined in
-  `~/.dotfiles/hypr/.config/hypr/hosts/desktop/host.conf`. Works with the
+  `~/.dotfiles/hypr/.config/hypr/hosts/desktop/host.lua`. Works with the
   screen black; sends a notification when done.
 - What it does: sets the output to 1920x1080@60 for 3 s to force a fresh DP
-  link training, then `hyprctl reload` restores the 4K mode from host.conf.
+  link training, then `hyprctl reload` restores the 4K mode from host.lua.
+
+Variant 2026-10-18, right monitor (HDMI-A-1): nothing black, "the game is
+lagging". The panel had fallen to 3840x2160@29.97 after a connector rescan:
+aquamarine logged `crtc 205 failed restore` / `failed to commit: Invalid
+argument` for every 4K mode above 30 Hz and silently took 29.97. Check with
+`hyprctl monitors -j` (refreshRate). The EDID was still fine (600 MHz TMDS,
+FRL); the NVIDIA driver's idea of the link was stale. No host-side reset
+cleared it: not the 1080p bounce, not `disabled = true` + reload. The latter
+is actively misleading: Hyprland then reports 60 Hz while
+`/sys/class/drm/card1-HDMI-A-1/enabled` says `disabled` and the panel is
+black. What fixed it: the monitor's own power button (real HPD drop), then
+`hl.monitor(... mode = '3840x2160@60' ...)` committed cleanly. dp-relink now
+checks the kernel state and, if 60 is refused, parks the panel at 29.97 and
+says to power-cycle. Moonlight is separately capped at fps=30 in its own
+settings; that is deliberate, not this bug.
 
 If the picture holds at 1080p but dies again at 4K, the cable or GPU port is
-marginal (host.conf already suspects a pre-DP1.4 cable): swap the cable or
+marginal (host.lua already suspects a pre-DP1.4 cable): swap the cable or
 move to another DP port. Drop history lives in the user journal:
 `journalctl -b --user | grep 'hyprsunset.*Found new output'`. Events where
 both outputs vanish at once are just the monitors being switched off/on.
@@ -69,3 +84,37 @@ check goes to `implementer` (in `~/.claude/agents`, symlinked from the kit),
 a sweep across files to `Explore`. Say in one line what was sent and to
 whom; never wait for a veto. The user, 2026-09-24: "as you see fit for the
 type of task it is. and then ill just staying in fable."
+
+## Discord: official `discord` package, forced to XWayland
+
+Fixed 2026-10-11. Two separate problems stacked:
+
+- `discord_arch_electron` (AUR, system Electron) cannot show other people's
+  streams: Discord's web app now needs `addDirectVideoOutputSink`, which only
+  Discord's own bundled Electron provides. `renderer_js.log` says
+  `Direct video streams are unavailable outside the native client`. Fix: the
+  `discord` package from extra. Since 1.0.x it is a 2 MB bootstrapper that
+  downloads the real client into `~/.config/discord/app-<ver>/` and keeps
+  `~/.config/discord/Discord` pointing at the current one.
+- The official build on native Wayland + NVIDIA kills its GPU process within
+  seconds: `'--ozone-platform=wayland' is not compatible with Vulkan`, then
+  `GPU process isn't usable. Goodbye.` Same thing in June 2026 on the AUR
+  build. XWayland is stable (slightly soft at 1.5x scale).
+
+What runs: `~/.config/hypr/scripts/discord-launch.sh` (prefers
+`~/.config/discord/Discord`, falls back to `/usr/bin/discord`, always adds
+`--ozone-platform=x11`), wired in by the dotfiles override
+`applications/.local/share/applications/discord.desktop`.
+
+Screen share with audio: Share Screen opens the Hyprland portal picker; the
+next dialog has "Also share system audio" (captures the default sink via
+pipewire-pulse). Needs xdg-desktop-portal-hyprland alive with a live PipeWire
+connection. If the picker never appears, PipeWire was restarted under the
+portals:
+
+```
+systemctl --user restart xdg-desktop-portal-hyprland xdg-desktop-portal-gtk xdg-desktop-portal
+```
+
+`~/.config/discord-flags.conf` is only read by the AUR launcher; the official
+client ignores it.
