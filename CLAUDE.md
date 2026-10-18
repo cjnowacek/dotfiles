@@ -51,9 +51,13 @@ Two Linux machines share the repo: a **desktop** (dual Dell 4K on NVIDIA) and a
 Everything that can be shared IS shared in one tracked file; a host file holds
 only what hardware dictates. Per-host files are down to three:
 
-- `hypr/.config/hypr/hyprland.conf` (shared) sources `~/.config/hypr/host.conf`
-  as its last line → `hosts/<role>/host.conf`: monitors, GPU env, wallpaper
-  daemon autostart, laptop brightness keys.
+- `hypr/.config/hypr/hyprland.lua` (shared, Lua — Hyprland 0.56+ warns at
+  every start that `.conf` support ends in 0.57) `loadfile`s
+  `~/.config/hypr/host.lua` as its last step → `hosts/<role>/host.lua`:
+  monitors, GPU env, wallpaper daemon autostart, laptop brightness keys.
+  `hyprland.conf` + `hosts/*/host.conf` are a frozen fallback for a machine
+  still on Hyprland < 0.56 (0.56+ ignores them when the .lua exists); delete
+  them once both machines are confirmed on 0.56+.
 - `hosts/<role>/hypridle.conf`: genuinely different — the desktop's NVIDIA/DP
   combo segfaults Hyprland on dpms-off, so it suspends instead; the laptop
   stages lock → screen-off (+ brightness restore) → suspend.
@@ -69,7 +73,7 @@ only what hardware dictates. Per-host files are down to three:
 - `bootstrap.sh` detects the role by battery presence (`/sys/class/power_supply/BAT*`
   → laptop), overridable with `DOTFILES_HOST=desktop|laptop`, and creates
   **gitignored relative symlinks inside the repo** (e.g.
-  `hypr/.config/hypr/host.conf → hosts/laptop/host.conf`). After a pull that
+  `hypr/.config/hypr/host.lua → hosts/laptop/host.lua`). After a pull that
   changes the hosts layout, run `./bootstrap.sh links` — it redoes only the
   symlinks (shell, nvim, hypr, waybar, wofi, kitty, dunst) and skips all installs.
 
@@ -145,18 +149,26 @@ Two more gotchas:
 - `links` also symlinks `~/.zprofile` (auto-`exec Hyprland` on TTY1 login). If
   the desktop had its own `~/.zprofile`, it's backed up to
   `~/.dotfiles-backup-<timestamp>/` — check it for lines worth merging.
-- Hyprland 0.56+ with an empty/missing config dir silently autogenerates a
-  **Lua** config (`hyprland.lua`) instead of erroring, and that session ignores
-  `hyprland.conf` until a full relogin — `hyprctl systeminfo | grep configProvider`
-  should say `hyprlang`, not `lua`. `hyprctl reload` cannot switch providers.
+- The config provider is picked once at startup and `hyprctl reload` cannot
+  switch it: `hyprctl systeminfo | grep configProvider` should say `lua`
+  (since 2026-10-09; `hyprlang` means that session is still on the frozen
+  `hyprland.conf` and needs a relogin). Hyprland 0.56+ with an empty/missing
+  config dir silently autogenerates a `hyprland.lua` instead of erroring.
+- Under the Lua provider `hyprctl keyword` is refused ("keyword can't work
+  with non-legacy parsers. Use eval."); the equivalent is
+  `hyprctl eval 'hl.config({ misc = { disable_autoreload = true } })'` or
+  `hyprctl eval 'hl.monitor({ ... })'`. A Lua runtime error aborts the rest
+  of the file, so a typo halfway through can leave a session with no binds
+  (emergency mode: SUPER+Q only) — always run
+  `Hyprland --verify-config -c ~/.config/hypr/hyprland.lua` before relogin.
 - **Pause Hyprland's auto-reload before any git operation that rewrites
-  `hyprland.conf`** (pull, rebase, checkout, stash):
-  `hyprctl keyword misc:disable_autoreload true`, then `hyprctl reload` once
-  the tree is settled (the reload also turns auto-reload back on). Git deletes
-  and recreates a file it rewrites; a running Hyprland that notices the moment
-  it is missing writes its "This config is a STUB!" file over it, and the
-  rebase then stops on that as a local change. Seen 2026-09-16 on the desktop:
-  restore with `git checkout -- hypr/.config/hypr/hyprland.conf`.
+  `hyprland.lua`** (pull, rebase, checkout, stash): the eval above, then
+  `hyprctl reload` once the tree is settled (the reload also turns auto-reload
+  back on). Git deletes and recreates a file it rewrites; a running Hyprland
+  that notices the moment it is missing writes its "This config is a STUB!"
+  file over it, and the rebase then stops on that as a local change. Seen
+  2026-09-16 on the desktop with `hyprland.conf`: restore with
+  `git checkout -- hypr/.config/hypr/hyprland.lua`.
 
 ## Key details
 

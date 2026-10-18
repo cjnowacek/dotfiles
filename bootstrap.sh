@@ -421,7 +421,7 @@ setup_hyprland() {
   for f in hyprlock.conf hyprpaper.conf; do
     [[ -L "$hypr_dir/$f" ]] && rm "$hypr_dir/$f"
   done
-  for f in host.conf hypridle.conf; do
+  for f in host.lua host.conf hypridle.conf; do
     ln -sfn "hosts/$HOST_ROLE/$f" "$hypr_dir/$f"
   done
   log "Hyprland configuration linked (host role: $HOST_ROLE)"
@@ -1151,7 +1151,7 @@ doctor() {
 
   log_step "Doctor: per-host links (role: $HOST_ROLE)"
   local f
-  for f in host.conf hypridle.conf; do
+  for f in host.lua host.conf hypridle.conf; do
     if [[ "$(readlink "$DOTFILES_DIR/hypr/.config/hypr/$f" 2>/dev/null)" != "hosts/$HOST_ROLE/$f" ]]; then
       log "WRONG/MISSING  hypr/$f should link to hosts/$HOST_ROLE/$f (run: ./bootstrap.sh links)"
       ok=false
@@ -1183,7 +1183,7 @@ doctor() {
       ok=false
     fi
   fi
-  # brightnessctl is only bound in the laptop host.conf
+  # brightnessctl is only bound in the laptop host.lua
   [[ "$HOST_ROLE" == "laptop" ]] && doctor_tools+=(brightnessctl)
   for cmd in "${doctor_tools[@]}"; do
     command -v "$cmd" &>/dev/null || missing+=("$cmd")

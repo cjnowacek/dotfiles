@@ -129,3 +129,7 @@ export PATH="$PATH:/home/seejay/.lmstudio/bin"
 
 # zk notebook — makes `zk daily|letter|work|sync` work from any directory
 export ZK_NOTEBOOK_DIR="$HOME/dev/zettelpara"
+
+# >>> Codex installer >>>
+export PATH="/home/seejay/.local/bin:$PATH"
+# <<< Codex installer <<<
