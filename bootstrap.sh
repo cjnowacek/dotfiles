@@ -461,6 +461,13 @@ setup_wofi() {
   for f in "$apps_src"/*.desktop; do
     create_symlink "$f" "$apps_dst/$(basename "$f")"
   done
+  # Icons the entries name (Icon=cairn): one file per size under hicolor,
+  # linked per file for the same reason as the entries.
+  local icons_src="$DOTFILES_DIR/applications/.local/share/icons"
+  local icon
+  while IFS= read -r icon; do
+    create_symlink "$icon" "$HOME/.local/share/icons/${icon#"$icons_src"/}"
+  done < <(find "$icons_src" -type f 2>/dev/null)
   command -v update-desktop-database >/dev/null && update-desktop-database "$apps_dst" 2>/dev/null
   rm -f "$HOME/.cache/wofi-drun"
   log "wofi configuration and desktop overrides linked"

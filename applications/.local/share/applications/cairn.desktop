@@ -1,0 +1,36 @@
+[Desktop Entry]
+Type=Application
+Name=Cairn
+GenericName=Vault Browser
+Comment=The zettelpara vault, served by zke on the droplet
+# Cairn is the web page at notes.cjnowacek.com (a PWA: standalone display,
+# service worker), installed in Chrome (Profile 1) on 2026-10-19; this opens
+# that installed app, the same window the page's "pop out" button opens, so
+# the two never fight over which window is Cairn. The app id is Chrome's for
+# https://notes.cjnowacek.com/ in this profile (Chrome's own entry for it is
+# chrome-<id>-Profile_1.desktop beside this file; it is left alone). The
+# window's class is chrome-<id>-Profile_1, matched by the cairn-web rule in
+# hypr/hyprland.lua. Icons: applications/.local/share/icons.
+Exec=google-chrome-stable "--profile-directory=Profile 1" --app-id=ekamnaoljcinngmggjdmagnkcmgnfckp
+Icon=cairn
+Terminal=false
+Categories=Office;TextEditor;
+Keywords=notes;vault;zettelpara;markdown;zettelkasten;
+StartupWMClass=chrome-ekamnaoljcinngmggjdmagnkcmgnfckp-Profile_1
+Actions=Plain;Native;Local;
+
+# The page in a plain Chrome app window, not the installed app: the old way,
+# kept for a machine or profile where Cairn is not installed.
+[Desktop Action Plain]
+Name=Plain app window (not installed)
+Exec=google-chrome-stable --app=https://notes.cjnowacek.com
+
+# The Qt build in zk-engine, for driving the native app while developing it.
+[Desktop Action Native]
+Name=Native app (Qt dev build)
+Exec=/home/seejay/dev/zk-engine/build/linux/src/gui/cairn /home/seejay/dev/zettelpara
+
+# A local `zke serve` (default port 3179), when working on the page itself.
+[Desktop Action Local]
+Name=Local build (zke serve :3179)
+Exec=google-chrome-stable --app=http://127.0.0.1:3179

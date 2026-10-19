@@ -299,6 +299,20 @@ hl.window_rule({
     float     = false,
 })
 
+-- Cairn as a Chrome app window (applications/cairn.desktop runs
+-- `google-chrome-stable --app=https://notes.cjnowacek.com`). Chrome names
+-- the window chrome-<host>__-<Profile>; the profile part varies per machine,
+-- so match the prefix. Tiled like any app, and not pinned to a workspace:
+-- unlike the Qt build above it is used, not relaunched, so it belongs
+-- wherever it was opened.
+hl.window_rule({
+    name  = "cairn-web",
+    -- Installed in Chrome (2026-10-19) the class is chrome-<app id>-<Profile>;
+    -- the plain --app= window keeps the host-named class. Both are Cairn.
+    match = { class = "^chrome-(notes\\.cjnowacek\\.com__|ekamnaoljcinngmggjdmagnkcmgnfckp)-" },
+    float = false,
+})
+
 
 ----------------------
 ---- HOST OVERLAY ----
