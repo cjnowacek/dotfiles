@@ -11,7 +11,9 @@ Comment=The zettelpara vault, served by zke on the droplet
 # chrome-<id>-Profile_1.desktop beside this file; it is left alone). The
 # window's class is chrome-<id>-Profile_1, matched by the cairn-web rule in
 # hypr/hyprland.lua. Icons: applications/.local/share/icons.
-Exec=google-chrome-stable "--profile-directory=Profile 1" --app-id=ekamnaoljcinngmggjdmagnkcmgnfckp
+# Launched through hypr/scripts/cairn-launch.sh, which falls back to a plain
+# app window when Chrome no longer has the installed app (2026-10-22).
+Exec=/home/seejay/.config/hypr/scripts/cairn-launch.sh
 Icon=cairn
 Terminal=false
 Categories=Office;TextEditor;
