@@ -12,6 +12,16 @@
 PROFILE="Profile 1"
 APP_ID=ekamnaoljcinngmggjdmagnkcmgnfckp
 URL=https://notes.cjnowacek.com
+
+# Chrome writes a desktop entry of its own for the installed app, also
+# called Cairn, and wofi lists both (2026-10-29: "two?"). This entry is the
+# one to keep, since it survives Chrome dropping the app; Chrome rewrites
+# its file whenever it refreshes the app, so it is hidden again here on
+# every launch rather than once.
+CHROME_ENTRY="$HOME/.local/share/applications/chrome-$APP_ID-${PROFILE// /_}.desktop"
+if [ -f "$CHROME_ENTRY" ] && ! grep -q '^NoDisplay=true' "$CHROME_ENTRY"; then
+  sed -i '/^NoDisplay=/d; /^\[Desktop Entry\]/a NoDisplay=true' "$CHROME_ENTRY"
+fi
 if [ -d "$HOME/.config/google-chrome/$PROFILE/Web Applications/Manifest Resources/$APP_ID" ]; then
   exec google-chrome-stable "--profile-directory=$PROFILE" "--app-id=$APP_ID"
 fi
