@@ -45,7 +45,7 @@ hl.env("HYPRCURSOR_SIZE", "24")
 ---------------------
 
 local terminal    = "kitty"
-local fileManager = "kitty -e yazi"
+local fileManager = "dolphin"
 local menu        = "wofi --show drun"
 
 
@@ -183,6 +183,7 @@ hl.bind(mainMod .. " + Return",    hl.dsp.exec_cmd(terminal))
 hl.bind(mainMod .. " + Q",         hl.dsp.window.close())
 hl.bind(mainMod .. " + SHIFT + E", hl.dsp.exit())
 hl.bind(mainMod .. " + E",         hl.dsp.exec_cmd(fileManager))
+hl.bind(mainMod .. " + ALT + E",   hl.dsp.exec_cmd("kitty -e yazi"))  -- terminal file browser (Dolphin is on SUPER+E since 2026-10-30)
 hl.bind(mainMod .. " + Space",     hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + D",         hl.dsp.exec_cmd(menu))
 hl.bind(mainMod .. " + F",         hl.dsp.window.fullscreen({ mode = "fullscreen" }))
