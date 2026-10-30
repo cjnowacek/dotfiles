@@ -12,10 +12,11 @@ Comment=The zettelpara vault, served by zke on the droplet
 # window's class is chrome-<id>-Profile_1, matched by the cairn-web rule in
 # hypr/hyprland.lua. Icons: applications/.local/share/icons.
 # Launched through hypr/scripts/cairn-launch.sh, which since 2026-10-30
-# opens it in a Firefox window instead (CAIRN_BROWSER=chrome for the app
+# opens it in a bare Firefox window of its own profile instead (CAIRN_BROWSER=chrome for the app
 # above, with its fallback to a plain app window, 2026-10-22).
 Exec=/home/seejay/.config/hypr/scripts/cairn-launch.sh
 Icon=cairn
+StartupWMClass=cairn-web
 Terminal=false
 Categories=Office;TextEditor;
 Keywords=notes;vault;zettelpara;markdown;zettelkasten;

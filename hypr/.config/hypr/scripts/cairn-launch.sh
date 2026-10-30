@@ -23,12 +23,25 @@ if [ -f "$CHROME_ENTRY" ] && ! grep -q '^NoDisplay=true' "$CHROME_ENTRY"; then
   sed -i '/^NoDisplay=/d; /^\[Desktop Entry\]/a NoDisplay=true' "$CHROME_ENTRY"
 fi
 # In Firefox since 2026-10-30 (the user: "have the super d cairn run with
-# firefox"): a new window of the running Firefox, so Proton Pass and
-# Claudezilla are there as in any tab. Firefox has no app-window mode, so
-# this is an ordinary window. CAIRN_BROWSER=chrome brings back the
+# firefox", then "should be the pop out version", "i don't like chrome"):
+# a Firefox profile of Cairn's own, with no tab strip or toolbar
+# (cairn-firefox/userChrome.css), so it opens as one bare window the way the
+# page's pop out does. Made on first launch; its settings are linked from
+# here so they stay in the dotfiles. Its window class is cairn-web, for a
+# window rule to match. Proton Pass and Claudezilla are not in
+# it; Cairn asks for its password once. CAIRN_BROWSER=chrome brings back the
 # installed Chrome app below.
 if [ "${CAIRN_BROWSER:-firefox}" = firefox ] && command -v firefox >/dev/null; then
-  exec firefox --new-window "$URL"
+  HERE="$(dirname "$(readlink -f "$0")")"
+  FFROOT="$HOME/.config/mozilla/firefox"
+  PROF="$FFROOT/cairn"
+  if ! grep -q '^Name=cairn$' "$FFROOT/profiles.ini" 2>/dev/null; then
+    firefox --headless -CreateProfile "cairn $PROF" >/dev/null 2>&1
+  fi
+  mkdir -p "$PROF/chrome"
+  ln -sf "$HERE/cairn-firefox/user.js" "$PROF/user.js"
+  ln -sf "$HERE/cairn-firefox/userChrome.css" "$PROF/chrome/userChrome.css"
+  exec firefox -P cairn --name cairn-web --class cairn-web --new-window "$URL"
 fi
 if [ -d "$HOME/.config/google-chrome/$PROFILE/Web Applications/Manifest Resources/$APP_ID" ]; then
   exec google-chrome-stable "--profile-directory=$PROFILE" "--app-id=$APP_ID"

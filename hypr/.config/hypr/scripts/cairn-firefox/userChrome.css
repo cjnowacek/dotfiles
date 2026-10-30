@@ -1,0 +1,3 @@
+/* Cairn's profile: no tab strip, no toolbar, no sidebar header; links out of
+   Cairn open in a window of their own (user.js). */
+#TabsToolbar, #nav-bar, #PersonalToolbar, #titlebar, #sidebar-header { visibility: collapse !important; }
