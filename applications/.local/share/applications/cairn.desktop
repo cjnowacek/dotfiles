@@ -11,15 +11,20 @@ Comment=The zettelpara vault, served by zke on the droplet
 # chrome-<id>-Profile_1.desktop beside this file; it is left alone). The
 # window's class is chrome-<id>-Profile_1, matched by the cairn-web rule in
 # hypr/hyprland.lua. Icons: applications/.local/share/icons.
-# Launched through hypr/scripts/cairn-launch.sh, which falls back to a plain
-# app window when Chrome no longer has the installed app (2026-10-22).
+# Launched through hypr/scripts/cairn-launch.sh, which since 2026-10-30
+# opens it in a Firefox window instead (CAIRN_BROWSER=chrome for the app
+# above, with its fallback to a plain app window, 2026-10-22).
 Exec=/home/seejay/.config/hypr/scripts/cairn-launch.sh
 Icon=cairn
 Terminal=false
 Categories=Office;TextEditor;
 Keywords=notes;vault;zettelpara;markdown;zettelkasten;
-StartupWMClass=chrome-ekamnaoljcinngmggjdmagnkcmgnfckp-Profile_1
-Actions=Plain;Native;Local;
+Actions=Chrome;Plain;Native;Local;
+
+# The installed Chrome app, as before Firefox.
+[Desktop Action Chrome]
+Name=Chrome app
+Exec=env CAIRN_BROWSER=chrome /home/seejay/.config/hypr/scripts/cairn-launch.sh
 
 # The page in a plain Chrome app window, not the installed app: the old way,
 # kept for a machine or profile where Cairn is not installed.
@@ -35,4 +40,4 @@ Exec=/home/seejay/dev/zk-engine/build/linux/src/gui/cairn /home/seejay/dev/zette
 # A local `zke serve` (default port 3179), when working on the page itself.
 [Desktop Action Local]
 Name=Local build (zke serve :3179)
-Exec=google-chrome-stable --app=http://127.0.0.1:3179
+Exec=firefox --new-window http://127.0.0.1:3179

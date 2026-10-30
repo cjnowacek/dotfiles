@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Open Cairn (notes.cjnowacek.com) from the launcher (cairn.desktop).
 #
-# The installed Chrome app when it is there: the same window the page's
+# Firefox first (below). With CAIRN_BROWSER=chrome: the installed Chrome app when it is there: the same window the page's
 # "pop out" button opens. Chrome drops an installed app without a word
 # (gone by 2026-10-22, three days after it was installed), and --app-id for
 # an app it no longer has opens an empty New Tab window instead, so check
@@ -21,6 +21,14 @@ URL=https://notes.cjnowacek.com
 CHROME_ENTRY="$HOME/.local/share/applications/chrome-$APP_ID-${PROFILE// /_}.desktop"
 if [ -f "$CHROME_ENTRY" ] && ! grep -q '^NoDisplay=true' "$CHROME_ENTRY"; then
   sed -i '/^NoDisplay=/d; /^\[Desktop Entry\]/a NoDisplay=true' "$CHROME_ENTRY"
+fi
+# In Firefox since 2026-10-30 (the user: "have the super d cairn run with
+# firefox"): a new window of the running Firefox, so Proton Pass and
+# Claudezilla are there as in any tab. Firefox has no app-window mode, so
+# this is an ordinary window. CAIRN_BROWSER=chrome brings back the
+# installed Chrome app below.
+if [ "${CAIRN_BROWSER:-firefox}" = firefox ] && command -v firefox >/dev/null; then
+  exec firefox --new-window "$URL"
 fi
 if [ -d "$HOME/.config/google-chrome/$PROFILE/Web Applications/Manifest Resources/$APP_ID" ]; then
   exec google-chrome-stable "--profile-directory=$PROFILE" "--app-id=$APP_ID"
