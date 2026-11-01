@@ -202,8 +202,30 @@ hl.bind(mainMod .. " + SHIFT + Return", hl.dsp.exec_cmd(terminal, { workspace = 
 
 -- Screenshots
 hl.bind("Print",                   hl.dsp.exec_cmd("grim - | wl-copy"))
-hl.bind(mainMod .. " + SHIFT + S", hl.dsp.exec_cmd('grim -g "$(slurp)" - | swappy -f -'))
 hl.bind(mainMod .. " + Print",     hl.dsp.exec_cmd("grim " .. HOME .. "/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png"))
+-- Globals (not locals) so they can be inspected:
+--   hyprctl repl 'return RegionShot:is_enabled(), MoonlightSnip:is_enabled()'
+RegionShot = hl.bind(mainMod .. " + SHIFT + S", hl.dsp.exec_cmd('grim -g "$(slurp)" - | swappy -f -'))
+
+-- Moonlight: the streamed Windows host wants Win+Shift+S for Snipping Tool, but
+-- that is SUPER+SHIFT+S here and Hyprland eats it for the local region shot.
+-- While Moonlight has focus the local bind is disabled so the chord passes
+-- straight through to the stream, and ALT+SHIFT+S is enabled as a second route
+-- that injects the same chord. Outside Moonlight both revert: the region shot
+-- is back and ALT+SHIFT+S is not intercepted at all.
+local MOONLIGHT_CLASS = "com.moonlight_stream.Moonlight"
+MoonlightSnip = hl.bind("ALT + SHIFT + S",
+    hl.dsp.send_shortcut({ mods = "SUPER SHIFT", key = "S", window = "class:" .. MOONLIGHT_CLASS }),
+    { desc = "Moonlight: send Win+Shift+S (Snipping Tool) to the host" })
+MoonlightSnip:set_enabled(false)
+local function syncMoonlightBinds()
+    local win = hl.get_active_window()
+    local inMoonlight = win ~= nil and win.class == MOONLIGHT_CLASS
+    RegionShot:set_enabled(not inMoonlight)
+    MoonlightSnip:set_enabled(inMoonlight)
+end
+hl.on("window.active", syncMoonlightBinds)
+syncMoonlightBinds()  -- also right after (re)load, when no focus event fires
 
 -- Clipboard history
 hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("cliphist list | wofi --dmenu | cliphist decode | wl-copy"))
