@@ -17,6 +17,13 @@
 # still the AUR launcher.
 set -euo pipefail
 
+# Hyprland runs with xwayland.force_zero_scaling, so X11 windows get raw pixels
+# and Electron must be told the monitor scale itself or it renders tiny.
+scale=$(hyprctl monitors -j 2>/dev/null | python3 -c 'import json,sys
+ms=json.load(sys.stdin); m=next((m for m in ms if m.get("focused")), ms[0] if ms else {})
+print(m.get("scale", 1))' 2>/dev/null || echo 1)
+set -- "--force-device-scale-factor=$scale" "$@"
+
 official="${XDG_CONFIG_HOME:-$HOME/.config}/discord/Discord"
 if [[ -x "$official" ]]; then
     exec "$official" --ozone-platform=x11 "$@"

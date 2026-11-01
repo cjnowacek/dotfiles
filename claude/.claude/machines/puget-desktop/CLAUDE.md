@@ -118,3 +118,32 @@ systemctl --user restart xdg-desktop-portal-hyprland xdg-desktop-portal-gtk xdg-
 
 `~/.config/discord-flags.conf` is only read by the AUR launcher; the official
 client ignores it.
+
+## Steam / Proton games: `steam-kill`, and why X11 windows are now unscaled
+
+- **Game hung, "won't close", audio still playing after Steam's Stop:**
+  `steam-kill` (SUPER+SHIFT+Q). Steam's Stop does nothing once a crash handler
+  pins the game, and the real game thread survives a kill of the visible Proton
+  tree: reparented to `systemd --user`, comm `GameThread`, empty cmdline, still
+  holding audio + ~8 GB VRAM. The script kills by environment (SteamGameId /
+  SteamAppId / compatdata path), which every descendant inherits. `-n` = dry run.
+  Script: `~/.config/hypr/scripts/steam-kill.sh`. The Steam client survives.
+- **`xwayland.force_zero_scaling = true`** (hyprland.lua, 2026-10-31): X11
+  windows get real 4K pixels instead of a 2560x1440 logical screen blurred up by
+  the compositor. Apps that scale themselves must be told: Steam via
+  `STEAM_FORCE_DESKTOPUI_SCALING=1.5` (hosts/desktop/host.lua; `env` only
+  applies at Hyprland start, `systemctl --user set-environment` for the running
+  session, and export it in any shell that launches Steam through `uwsm app`),
+  Electron/Discord via `--force-device-scale-factor` (discord-launch.sh reads
+  the focused monitor's scale). A new X11 app that comes up tiny needs the same.
+- **Proton helpers that waste a core:** `PROTON_USE_XALIA=0` (accessibility
+  helper, ~20%) and `WINEDLLOVERRIDES=EOSOVH-Win64-Shipping=d` (Epic EOS
+  overlay = Chromium inside Wine, ~25% + its own GPU process) as per-game launch
+  options. Proton appends user WINEDLLOVERRIDES to its own, it does not clobber.
+- **Keep Proton + Steam Linux Runtime on the NVMe library**
+  (`~/.local/share/Steam`). On `/mnt/sao` (SMR HDD, NTFS via ntfs-3g FUSE) a
+  launch spends minutes reading 13k small files. Moving = move
+  `appmanifest_<id>.acf` + `common/<dir>` with Steam closed; Steam rebuilds
+  libraryfolders.vdf. Deleting from `/mnt/sao` leaves `.fuse_hidden*` files
+  behind if anything had them open; they vanish on the next remount.
+- Game-specific history (Galactic Racer): Claude memory `galactic-racer-steam`.

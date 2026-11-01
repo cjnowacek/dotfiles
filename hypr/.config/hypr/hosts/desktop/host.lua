@@ -18,8 +18,15 @@ local ctx = ...
 --   so the DP link isn't negotiating DSC. Most likely a pre-DP1.4 cable.
 --
 -- Do NOT use `highrr` on either: it would drop them to 1440p to chase refresh.
-hl.monitor({ output = "DP-1",     mode = "3840x2160@60", position = "0x0",    scale = 1.5 })
-hl.monitor({ output = "HDMI-A-1", mode = "3840x2160@60", position = "2560x0", scale = 1.5 })
+local SCALE = 1.5
+hl.monitor({ output = "DP-1",     mode = "3840x2160@60", position = "0x0",    scale = SCALE })
+hl.monitor({ output = "HDMI-A-1", mode = "3840x2160@60", position = "2560x0", scale = SCALE })
+
+-- xwayland.force_zero_scaling (hyprland.lua) hands X11 apps raw 4K pixels, so
+-- the Steam client (XWayland) must scale its own UI to match SCALE. The laptop
+-- host runs at scale 1 and needs nothing. `env` only applies at Hyprland start;
+-- for the running session it was also pushed with `systemctl --user set-environment`.
+hl.env("STEAM_FORCE_DESKTOPUI_SCALING", tostring(SCALE))
 
 -- DP-1 sometimes wedges after the panels have been off/asleep: black with
 -- millisecond flashes, while the GPU still reports it connected (no HPD drop,

@@ -424,6 +424,11 @@ setup_hyprland() {
   for f in host.lua host.conf hypridle.conf; do
     ln -sfn "hosts/$HOST_ROLE/$f" "$hypr_dir/$f"
   done
+
+  # Scripts that are also useful from a terminal (and from a black screen).
+  for f in dp-relink steam-kill; do
+    create_symlink "$HOME/.config/hypr/scripts/$f.sh" "$HOME/.local/bin/$f"
+  done
   log "Hyprland configuration linked (host role: $HOST_ROLE)"
 }
 

@@ -138,6 +138,17 @@ hl.config({
         disable_hyprland_logo   = true,
     },
 
+    -- XWayland apps see the real pixel size instead of the scaled logical
+    -- size. Without this, at scale 1.5 every X11 window (Steam, Discord,
+    -- Proton games) renders at 2560x1440 and the compositor blurs it up to
+    -- 4K; a fullscreen game then can never direct-scanout either. Apps that
+    -- handle DPI themselves need telling: STEAM_FORCE_DESKTOPUI_SCALING in
+    -- hosts/desktop/host.lua, --force-device-scale-factor in
+    -- scripts/discord-launch.sh. (2026-10-31, Galactic Racer looked like mush.)
+    xwayland = {
+        force_zero_scaling = true,
+    },
+
     debug = {
         vfr = true,
     },
@@ -273,6 +284,13 @@ hl.bind("XF86AudioPrev",  hl.dsp.exec_cmd("playerctl previous"),   { locked = tr
 -- Was `systemctl poweroff` directly — instant, unconfirmed, and one modifier away
 -- from SUPER+P (pseudo). Now opens a menu; reboot/poweroff/exit ask to confirm.
 hl.bind(mainMod .. " + SHIFT + P", hl.dsp.exec_cmd(SCRIPTS .. "/power-menu.sh"))
+
+-- Steam: hard-kill the running game. Steam's own Stop button does nothing once
+-- a crash handler has pinned the game, and the real game thread survives a
+-- kill of the visible Proton tree (reparented, empty cmdline, still holding
+-- audio + VRAM). The script kills by environment (SteamGameId), so it gets
+-- every piece. Works with the game fullscreen or hung; Steam itself survives.
+hl.bind(mainMod .. " + SHIFT + Q", hl.dsp.exec_cmd(SCRIPTS .. "/steam-kill.sh"))
 
 
 --------------------------------
