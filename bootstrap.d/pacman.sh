@@ -23,6 +23,9 @@ pkg_install_base() {
   [[ "$IS_WSL" != true ]] && pkgs+=(xclip)
   sudo pacman -S --needed --noconfirm "${pkgs[@]}"
 
+  # geoclue: the browser's location on a desktop with no GPS (Firefox asks
+  # it first); hyprland.lua starts its agent. Cairn's journal entries use it
+  # for the place-and-weather line (2026-11-04).
   # Everything the hypr/waybar configs exec or bind. The configs land on
   # every Linux machine, so a missing tool here is a silently dead keybind
   # or autostart (this is how the laptop ran without dunst, cliphist, and
@@ -34,7 +37,7 @@ pkg_install_base() {
       dunst cliphist wl-clipboard wofi \
       grim slurp swappy playerctl brightnessctl \
       pavucontrol kitty yazi btop rclone fuse3 \
-      ttf-jetbrains-mono-nerd
+      ttf-jetbrains-mono-nerd geoclue
   fi
 
   # Install yay AUR helper

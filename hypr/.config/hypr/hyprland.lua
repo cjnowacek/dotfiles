@@ -66,6 +66,15 @@ hl.on("hyprland.start", function()
     hl.exec_cmd(START .. " hyprsunset")
     hl.exec_cmd(START .. " wl-paste --type text --watch cliphist store")
     hl.exec_cmd(START .. " wl-paste --type image --watch cliphist store")
+    -- GeoClue answers a location request only through an agent, and
+    -- Hyprland has none: without it Firefox never gets a position, not even
+    -- an error. The demo agent approves requests from apps geoclue.conf
+    -- allows (Firefox is). Cairn's journal entries use it (2026-11-04).
+    local agent = io.open("/usr/lib/geoclue-2.0/demos/agent")
+    if agent then
+        agent:close()
+        hl.exec_cmd(START .. " /usr/lib/geoclue-2.0/demos/agent")
+    end
 end)
 
 
