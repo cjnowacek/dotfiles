@@ -23,6 +23,10 @@ pkg_install_base() {
   [[ "$IS_WSL" != true ]] && pkgs+=(xclip)
   sudo pacman -S --needed --noconfirm "${pkgs[@]}"
 
+  # tectonic: the LaTeX engine Cairn's Sites tab builds the resume's PDFs
+  # with (zke serve --site resume=~/dev/resume, 2026-11-08).
+  sudo pacman -S --needed --noconfirm tectonic
+
   # geoclue: the browser's location on a desktop with no GPS (Firefox asks
   # it first); hyprland.lua starts its agent. Cairn's journal entries use it
   # for the place-and-weather line (2026-11-04).
