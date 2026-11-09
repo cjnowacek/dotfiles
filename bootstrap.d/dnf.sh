@@ -49,7 +49,9 @@ pkg_install_base() {
   [[ "${XDG_CURRENT_DESKTOP:-}" == *GNOME* ]] && \
     pkgs+=(papirus-icon-theme gnome-tweaks gnome-shell-extension-user-theme)
   # WSL doesn't need xclip (uses Windows clipboard)
-  [[ "$IS_WSL" != true ]] && pkgs+=(xclip)
+  # xournalpp: sign, fill in and mark up PDFs (EPEL on EL, base on Fedora);
+  # same desktop app the pacman backend installs.
+  [[ "$IS_WSL" != true ]] && pkgs+=(xclip xournalpp)
   sudo dnf install -y --setopt=strict=0 "${pkgs[@]}"
 }
 

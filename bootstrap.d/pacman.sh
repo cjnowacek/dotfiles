@@ -42,6 +42,11 @@ pkg_install_base() {
       grim slurp swappy playerctl brightnessctl \
       pavucontrol kitty yazi dolphin btop rclone fuse3 \
       ttf-jetbrains-mono-nerd geoclue
+
+    # Desktop apps that no config references but every graphical machine
+    # should have. xournalpp: sign, fill in and mark up PDFs.
+    log "Installing desktop apps"
+    sudo pacman -S --needed --noconfirm xournalpp
   fi
 
   # Install yay AUR helper
