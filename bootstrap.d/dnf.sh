@@ -52,6 +52,10 @@ pkg_install_base() {
   # xournalpp: sign, fill in and mark up PDFs (EPEL on EL, base on Fedora);
   # same desktop app the pacman backend installs.
   [[ "$IS_WSL" != true ]] && pkgs+=(xclip xournalpp)
+  # dolphin: the file manager the Hyprland hosts bind to SUPER+E (EPEL on EL,
+  # base on Fedora). Only inside a desktop session: it brings the KDE
+  # frameworks with it.
+  [[ "$IS_WSL" != true && -n "${XDG_CURRENT_DESKTOP:-}" ]] && pkgs+=(dolphin)
   sudo dnf install -y --setopt=strict=0 "${pkgs[@]}"
 }
 

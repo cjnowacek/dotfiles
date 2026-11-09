@@ -19,9 +19,10 @@
         (mirrors bootstrap.sh's repo setup on the Linux side)
 
     Then winget-installs the native tools that config assumes: neovim, git,
-    ripgrep, fd, eza, gcc (WinLibs, for treesitter), and the Claude Code CLI.
-    Anything already on PATH is skipped, and a failed install warns rather
-    than aborts.
+    ripgrep, fd, eza, gcc (WinLibs, for treesitter), and the Claude Code CLI,
+    plus the desktop apps the Linux machines get (Dolphin, Xournal++).
+    Anything already on PATH (or, for the apps, known to winget) is skipped,
+    and a failed install warns rather than aborts.
 
     -Links redoes only the links (the Windows `./bootstrap.sh links`): no
     installs, no repo prompts, so it runs unattended. -Vaults overrides the
@@ -149,6 +150,31 @@ function Install-Pkg([string]$Cmd, [string]$Id, [string]$Why) {
         # below) can actually see what was just installed.
         $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' +
                     [Environment]::GetEnvironmentVariable('Path', 'User')
+    } catch {
+        Write-Info "install failed for ${Id}: $($_.Exception.Message)"
+    }
+}
+
+# Install a desktop app via winget. A GUI app puts no command on PATH for
+# Install-Pkg to probe (it lands under Program Files), so ask winget whether
+# the id is installed. stdout only goes to Out-Null: PS5.1 throws on
+# redirected native stderr under 'Stop'. Never fatal, like Install-Pkg.
+function Install-App([string]$Id, [string]$Why) {
+    if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+        Write-Info "winget missing - install $Id by hand ($Why)"
+        return
+    }
+    try {
+        winget list --id $Id -e --accept-source-agreements --disable-interactivity | Out-Null
+        if ($LASTEXITCODE -eq 0) {
+            Write-Info "already installed: $Id"
+            return
+        }
+        Write-Info "installing $Id ($Why)"
+        winget install --id $Id -e --accept-package-agreements --accept-source-agreements --disable-interactivity
+        if ($LASTEXITCODE -ne 0) {
+            Write-Info "winget exit $LASTEXITCODE for $Id - check manually"
+        }
     } catch {
         Write-Info "install failed for ${Id}: $($_.Exception.Message)"
     }
@@ -339,6 +365,10 @@ Install-Pkg 'yazi' 'sxyazi.yazi'              'file manager, same y muscle memor
 # though it can compile C. WinLibs is the gcc build treesitter itself suggests,
 # and needs no Visual Studio install.
 Install-Pkg 'gcc'  'BrechtSanders.WinLibs.POSIX.UCRT' 'nvim-treesitter parser compilation'
+
+# Desktop apps, the pair bootstrap.sh installs on the Linux machines.
+Install-App 'KDE.Dolphin'         'file manager, the one SUPER+E opens on Linux'
+Install-App 'Xournal++.Xournal++' 'sign, fill in and mark up PDFs'
 
 # 9. zk CLI (not on winget; fetch the latest GitHub release binary).
 # The PowerShell profile sets ZK_NOTEBOOK_DIR, and the vault's CLAUDE.md

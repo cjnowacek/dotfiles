@@ -10,6 +10,11 @@ pkg_install_base() {
   fi
   log "Using Homebrew"
   brew install git curl wget ripgrep fd fzf eza pandoc zsh
+
+  # Desktop apps. xournal++ is the xournalpp the Linux backends install: sign,
+  # fill in and mark up PDFs. No Dolphin here: Homebrew does not package KDE's
+  # file manager, and the cask named "dolphin" is the GameCube emulator.
+  brew install --cask xournal++ || log "xournal++ cask failed; install it by hand"
 }
 
 pkg_install_neovim() {

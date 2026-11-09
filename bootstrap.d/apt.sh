@@ -14,6 +14,13 @@ pkg_install_base() {
     pkgs+=(libasound2t64 libnotify4 libnss3 xdg-utils libsecret-1-0)
   else
     pkgs+=(xclip)
+    # Desktop apps, the pair the pacman and dnf backends install. dolphin: the
+    # file manager hyprland.lua binds to SUPER+E; xournalpp: sign, fill in and
+    # mark up PDFs. Only with a desktop: apt also runs on headless servers,
+    # where these would drag in all of Qt and GTK.
+    if [[ -n "${XDG_CURRENT_DESKTOP:-}" ]] || command -v Hyprland &>/dev/null; then
+      pkgs+=(dolphin xournalpp)
+    fi
   fi
   sudo apt-get install -y "${pkgs[@]}"
 
