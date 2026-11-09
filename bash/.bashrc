@@ -121,7 +121,10 @@ export PATH="$PATH:/home/seejay/.lmstudio/bin"
 # End of LM Studio CLI section
 
 
-. "$HOME/.local/share/../bin/env"
+# uv's installer adds this line and looks for it verbatim before adding it
+# again, so the path stays spelled its way. Guarded: on a machine without uv
+# the file is absent and a bare `.` fails every time the rc is sourced.
+[[ -f "$HOME/.local/share/../bin/env" ]] && . "$HOME/.local/share/../bin/env"
 
 # zk notebook — makes `zk daily|letter|work|sync` work from any directory
 export ZK_NOTEBOOK_DIR="$HOME/dev/zettelpara"
