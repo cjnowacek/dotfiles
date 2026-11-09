@@ -1186,7 +1186,7 @@ doctor() {
   local missing=()
   local cmd
   local doctor_tools=(waybar hypridle hyprlock dunst cliphist wofi grim slurp \
-    swappy playerctl wl-copy kitty yazi btop nvim zsh)
+    swappy playerctl wl-copy kitty yazi dolphin btop nvim zsh)
   # GNOME host (Rocky): the hypr stack is unpackaged and unused there.
   if [[ "${XDG_CURRENT_DESKTOP:-}" == *GNOME* ]]; then
     doctor_tools=(kitty yazi btop nvim zsh)

@@ -40,7 +40,7 @@ pkg_install_base() {
       waybar hypridle hyprlock hyprpaper hyprsunset \
       dunst cliphist wl-clipboard wofi \
       grim slurp swappy playerctl brightnessctl \
-      pavucontrol kitty yazi btop rclone fuse3 \
+      pavucontrol kitty yazi dolphin btop rclone fuse3 \
       ttf-jetbrains-mono-nerd geoclue
   fi
 
