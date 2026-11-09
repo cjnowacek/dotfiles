@@ -194,9 +194,20 @@ gsettings set org.gnome.desktop.wm.preferences mouse-button-modifier '<Super>'
 gsettings set org.gnome.desktop.wm.preferences resize-with-right-button true
 
 # exec binds -> custom keybindings (kitty ones are set above).
-fm='nautilus'; command -v yazi &>/dev/null && fm='kitty -e yazi'
-gsettings set $K custom-keybindings \
-  "['$B/kitty-super/', '$B/kitty-ctrlalt/', '$B/filemanager/', '$B/powermenu/']"
+# Super+E is the graphical file manager and Super+Alt+E is yazi, as in
+# hyprland.lua (Dolphin took Super+E there on 2026-10-30). Without Dolphin,
+# Super+E falls back to yazi, then nautilus.
+fm='nautilus'
+command -v yazi &>/dev/null && fm='kitty -e yazi'
+command -v dolphin &>/dev/null && fm='dolphin'
+binds="'$B/kitty-super/', '$B/kitty-ctrlalt/', '$B/filemanager/', '$B/powermenu/'"
+if command -v yazi &>/dev/null; then
+  binds+=", '$B/yazi/'"
+  gsettings set "$K.custom-keybinding:$B/yazi/" name 'yazi'
+  gsettings set "$K.custom-keybinding:$B/yazi/" command 'kitty -e yazi'
+  gsettings set "$K.custom-keybinding:$B/yazi/" binding '<Super><Alt>e'
+fi
+gsettings set $K custom-keybindings "[$binds]"
 gsettings set "$K.custom-keybinding:$B/filemanager/" name 'file manager'
 gsettings set "$K.custom-keybinding:$B/filemanager/" command "$fm"
 gsettings set "$K.custom-keybinding:$B/filemanager/" binding '<Super>e'

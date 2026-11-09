@@ -273,8 +273,8 @@ old Mesa), and Maya targets GNOME anyway, so the VM keeps GNOME and gets
   gnome-terminal/xterm list), hence the `applications/yazi.desktop` override.
 - `apply.sh` also replays the hyprland.conf binds Mutter can express: 10
   static workspaces on Super+N / Super+Shift+N, Super+Q close, Super+F
-  fullscreen, Super+D app grid, Super+E file manager (yazi in kitty if
-  installed, else nautilus), Super+Ctrl+L lock, Super+Shift+E logout,
+  fullscreen, Super+D app grid, Super+E file manager (Dolphin if installed,
+  else yazi in kitty, else nautilus), Super+Alt+E yazi, Super+Ctrl+L lock, Super+Shift+E logout,
   Super+Shift+P power dialog, Print / Super+Print / Super+Shift+S
   screenshots, Super+drag move and Super+right-drag resize, Super+h/l cycle
   windows, Super+Shift+hjkl/arrows move to monitor. Not mappable: floating
@@ -313,7 +313,9 @@ old Mesa), and Maya targets GNOME anyway, so the VM keeps GNOME and gets
   release binaries into `~/.local/bin` when the package manager left them
   out (yazi is in no EL9 repo; rclone is EPEL but the VM had no sudo). The
   rclone unit's `ExecStart` is resolved from `command -v rclone` for that
-  reason. `gnome/apply.sh` binds Super+E to `kitty -e yazi` once yazi exists.
+  reason. `gnome/apply.sh` binds Super+Alt+E to `kitty -e yazi` once yazi exists
+  (and Super+E too, until Dolphin is installed: `sudo dnf install dolphin`
+  from EPEL, then rerun `gnome/apply.sh`).
 - `install_nerd_font` (bootstrap.sh) downloads the Nerd Font release into
   `~/.local/share/fonts` when no package provided it (EPEL has none).
 - **VTE gotchas:** GNOME Terminal must use the `... Nerd Font Mono` variant
